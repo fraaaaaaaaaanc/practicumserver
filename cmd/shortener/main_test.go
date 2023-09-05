@@ -100,8 +100,8 @@ func TestGetRequest(t *testing.T) {
 		{
 			name: "test one!",
 			want: wantGet{
-				statusCode: 400,
-				Location:   "",
+				statusCode: 307,
+				Location:   "http://test",
 			},
 			adress: "/test",
 		},
@@ -119,7 +119,7 @@ func TestGetRequest(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, tt.adress, nil)
 			fmt.Println(request.URL.String())
 			w := httptest.NewRecorder()
-			PostRequest(w, request)
+			GetRequest(w, request)
 
 			res := w.Result()
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
