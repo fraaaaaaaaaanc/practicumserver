@@ -67,7 +67,8 @@ func run() error {
 //}
 
 func GetRequest(w http.ResponseWriter, r *http.Request) {
-	if _, ok := shorturls[r.URL.String()[1:]]; r.Header.Get("Content-Type") != "text/plain" || !ok {
+	if _, ok := shorturls[r.URL.String()[1:]]; !ok {
+		//r.Header.Get("Content-Type") != "text/plain" ||
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Println(ok)
 		return
@@ -79,7 +80,7 @@ func GetRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostRequest(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("Content-Type") != "text/plain" || r.URL.String() != "/" {
+	if r.Header.Get("Content-Type") != "text/plain; charset=utf-8" || r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
