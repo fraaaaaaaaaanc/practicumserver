@@ -60,9 +60,9 @@ func GetRequest(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(ok)
 		return
 	}
-	w.WriteHeader(http.StatusTemporaryRedirect)
 	//w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Location", shorturls[r.URL.String()[1:]])
+	w.WriteHeader(http.StatusTemporaryRedirect)
 	//for key, values := range w.Header() {
 	//	for _, value := range values {
 	//		fmt.Println(w, "%s: %s\n", key, value)
