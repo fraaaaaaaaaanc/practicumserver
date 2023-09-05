@@ -8,7 +8,7 @@ import (
 )
 
 var shorturls map[string][]byte = make(map[string][]byte)
-var LocalUrl string = "http://localhost:8080/"
+var LocalURL string = "http://localhost:8080/"
 
 const (
 	alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -77,7 +77,8 @@ func PostRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, "Ошибка чтения тела запроса", http.StatusBadRequest)
+		//http.Error(w, "Ошибка чтения тела запроса", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
@@ -89,7 +90,7 @@ func PostRequest(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	_, _ = w.Write([]byte(LocalUrl + id))
+	_, _ = w.Write([]byte(LocalURL + id))
 }
 
 func Base62Encode(number uint64) string {
