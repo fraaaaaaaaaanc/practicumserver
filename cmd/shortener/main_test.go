@@ -124,6 +124,8 @@ func TestGetRequest(t *testing.T) {
 			res := w.Result()
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
 			assert.Equal(t, tt.want.Location, res.Header.Get("location"))
+			err := res.Body.Close()
+			require.NoError(t, err)
 		})
 	}
 }
