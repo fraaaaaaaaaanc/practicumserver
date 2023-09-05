@@ -75,7 +75,7 @@ func GetRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusTemporaryRedirect)
 	//w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Location", string(shorturls["OTv0FdGU8Ng "]))
+	w.Header().Set("Location", string(shorturls["OTv0FdGU8Ng"]))
 	//_, _ = w.Write([]byte(w.Header().Get("Location")))
 }
 
