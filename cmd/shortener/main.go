@@ -30,19 +30,6 @@ func run() error {
 	return http.ListenAndServe(`:8080`, router)
 }
 
-func GetRequest(w http.ResponseWriter, r *http.Request) {
-	if _, ok := shorturls[r.URL.String()[1:]]; !ok {
-		//r.Header.Get("Content-Type") != "text/plain" ||
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Println(ok)
-		return
-	}
-	w.WriteHeader(http.StatusTemporaryRedirect)
-	//w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Location", shorturls[r.URL.String()[1:]])
-	_, _ = w.Write([]byte(shorturls[r.URL.String()[1:]]))
-}
-
 func PostRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "text/plain; charset=utf-8" || r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -64,6 +51,24 @@ func PostRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	_, _ = w.Write([]byte(LocalURL + id))
+}
+
+func GetRequest(w http.ResponseWriter, r *http.Request) {
+	if _, ok := shorturls[r.URL.String()[1:]]; !ok {
+		//r.Header.Get("Content-Type") != "text/plain" ||
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Println(ok)
+		return
+	}
+	w.WriteHeader(http.StatusTemporaryRedirect)
+	//w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Location", shorturls[r.URL.String()[1:]])
+	//for key, values := range w.Header() {
+	//	for _, value := range values {
+	//		fmt.Println(w, "%s: %s\n", key, value)
+	//	}
+	//}
+	_, _ = w.Write([]byte{})
 }
 
 func Base62Encode(number uint64) string {
