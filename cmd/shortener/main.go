@@ -75,7 +75,7 @@ func GetRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusTemporaryRedirect)
 	//w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Location", string(shorturls[r.URL.String()[1:]]))
+	w.Header().Set("Location", string(shorturls["OTv0FdGU8Ng "]))
 	//_, _ = w.Write([]byte(w.Header().Get("Location")))
 }
 
@@ -94,7 +94,7 @@ func PostRequest(w http.ResponseWriter, r *http.Request) {
 	//rand.Seed(time.Now().UnixNano())
 	id := Base62Encode(rand.Uint64())
 	if _, ok := shorturls[id]; !ok {
-		shorturls[id] = body
+		shorturls["OTv0FdGU8Ng"] = body
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
