@@ -1,5 +1,5 @@
 package db
 
 var ShortUrls = map[string]string{
-	"test": "http://test",
+	"http://test": "test",
 }
