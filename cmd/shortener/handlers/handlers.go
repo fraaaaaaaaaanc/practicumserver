@@ -23,8 +23,8 @@ func PostRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 	id := utils.LinkShortening()
-	if _, ok := db.ShortUrls[id]; !ok {
-		db.ShortUrls[id] = string(body)
+	if _, ok := db.ShortUrls[string(body)]; !ok {
+		db.ShortUrls[string(body)] = id
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
@@ -34,10 +34,12 @@ func PostRequest(w http.ResponseWriter, r *http.Request) {
 
 // Обработчик Get запроса
 func GetRequest(w http.ResponseWriter, r *http.Request) {
-	if _, ok := db.ShortUrls[r.URL.String()[1:]]; !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	for _, v := range db.ShortUrls {
+		if v == r.URL.String()[1:] {
+			w.Header().Set("Location", db.ShortUrls[r.URL.String()[1:]])
+			w.WriteHeader(http.StatusTemporaryRedirect)
+			return
+		}
 	}
-	w.Header().Set("Location", db.ShortUrls[r.URL.String()[1:]])
-	w.WriteHeader(http.StatusTemporaryRedirect)
+	w.WriteHeader(http.StatusBadRequest)
 }
