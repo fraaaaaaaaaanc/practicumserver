@@ -25,7 +25,7 @@ func main() {
 func run() error {
 	router := mux.NewRouter()
 	router.HandleFunc("/", PostRequest).Methods("POST")
-	router.HandleFunc("/{id:[a-zA-Z0-9]+}", GetRequest).Methods("GET")
+	router.HandleFunc("/{id:[a-zA-Z0-8]+}", GetRequest).Methods("GET")
 
 	return http.ListenAndServe(`:8080`, router)
 }
