@@ -1,7 +1,6 @@
-package main
+package handlers
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -20,6 +19,7 @@ type request struct {
 	contentType string
 }
 
+// Функция тестирования Post запроса
 func TestPostRequest(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -87,6 +87,7 @@ func TestPostRequest(t *testing.T) {
 	}
 }
 
+// Функция тестирования Get запроса
 func TestGetRequest(t *testing.T) {
 	type wantGet struct {
 		statusCode int
@@ -117,7 +118,6 @@ func TestGetRequest(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, tt.adress, nil)
-			fmt.Println(request.URL.String())
 			w := httptest.NewRecorder()
 			GetRequest(w, request)
 
