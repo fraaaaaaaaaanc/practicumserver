@@ -36,7 +36,7 @@ func PostRequest(w http.ResponseWriter, r *http.Request) {
 // Обработчик Get запроса
 func GetRequest(w http.ResponseWriter, r *http.Request) {
 	for k, v := range db.ShortUrls {
-		if v == chi.URLParam(r, "id") {
+		if v == r.URL.String()[1:] {
 			w.Header().Set("Location", k)
 			w.WriteHeader(http.StatusTemporaryRedirect)
 			return
