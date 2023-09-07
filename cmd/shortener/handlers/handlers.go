@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/go-chi/chi"
 	"io"
 	"net/http"
 	"practicumserver/cmd/shortener/db"
@@ -35,11 +36,19 @@ func PostRequest(w http.ResponseWriter, r *http.Request) {
 // Обработчик Get запроса
 func GetRequest(w http.ResponseWriter, r *http.Request) {
 	for k, v := range db.ShortUrls {
-		if v == r.URL.String()[1:] {
+		if v == chi.URLParam(r, "id") {
 			w.Header().Set("Location", k)
 			w.WriteHeader(http.StatusTemporaryRedirect)
 			return
 		}
 	}
 	w.WriteHeader(http.StatusBadRequest)
+}
+
+func Router() chi.Router {
+	r := chi.NewRouter()
+	r.Get("/{id}", GetRequest)
+	r.Post("/", PostRequest)
+
+	return r
 }

@@ -1,9 +1,8 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
 	"net/http"
-	"practicumserver/cmd/shortener/handlers"
+	"practicumserver/cmd/shortener/router"
 )
 
 func main() {
@@ -13,9 +12,5 @@ func main() {
 }
 
 func run() error {
-	router := mux.NewRouter()
-	router.HandleFunc("/", handlers.PostRequest).Methods("POST")
-	router.HandleFunc("/{id:[a-zA-Z0-9]+}", handlers.GetRequest).Methods("GET")
-
-	return http.ListenAndServe(`:8080`, router)
+	return http.ListenAndServe(`:8080`, router.Router())
 }

@@ -104,10 +104,10 @@ func TestGetRequest(t *testing.T) {
 				statusCode: 307,
 				Location:   "http://test",
 			},
-			adress: "/test",
+			adress: "//test?id=test",
 		},
 		{
-			name: "test one!",
+			name: "test two!",
 			want: wantGet{
 				statusCode: 400,
 				Location:   "",
@@ -117,14 +117,18 @@ func TestGetRequest(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			request := httptest.NewRequest(http.MethodGet, tt.adress, nil)
-			w := httptest.NewRecorder()
-			GetRequest(w, request)
+			ts := httptest.NewServer(Router())
+			defer ts.Close()
+			req, err := http.NewRequest(http.MethodGet, ts.URL+tt.adress, nil)
+			res, err := ts.Client().Do(req)
+			require.NoError(t, err)
+			//w := httptest.NewRecorder()
+			//GetRequest(w, request)
 
-			res := w.Result()
+			//res := w.Result()
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
 			assert.Equal(t, tt.want.Location, res.Header.Get("location"))
-			err := res.Body.Close()
+			err = res.Body.Close()
 			require.NoError(t, err)
 		})
 	}
