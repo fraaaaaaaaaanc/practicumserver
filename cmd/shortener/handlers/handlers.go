@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/go-chi/chi"
 	"io"
 	"net/http"
@@ -10,9 +11,6 @@ import (
 
 var encodigs []string = []string{"charset=utf-8", "charset=iso-8859-1", "charset=windows-1251", "charset=us-ascii"}
 
-// Локальный адресс
-var LocalURL string = "http://localhost:8080/"
-
 // Обработчик Post запроса
 func PostRequest(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
@@ -20,32 +18,35 @@ func PostRequest(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	body, err := io.ReadAll(r.Body)
-	if err != nil || string(body) == "" {
+	link, err := io.ReadAll(r.Body)
+	if err != nil || string(link) == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
-	id := utils.LinkShortening()
-	if _, ok := db.ShortUrls[string(body)]; !ok {
-		db.ShortUrls[string(body)] = id
+	srtLink := utils.LinkShortening()
+	avlblSrtLink, err := db.SetDB(string(link), srtLink)
+	if err != nil {
+		srtLink = avlblSrtLink
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	_, _ = w.Write([]byte(LocalURL + id))
+	domain := fmt.Sprintf("http://%s/", r.Host)
+	_, _ = w.Write([]byte(domain + srtLink))
 }
 
 // Обработчик Get запроса
 func GetRequest(w http.ResponseWriter, r *http.Request) {
-	for k, v := range db.ShortUrls {
-		if v == r.URL.String()[1:] {
-			w.Header().Set("Location", k)
-			w.WriteHeader(http.StatusTemporaryRedirect)
-			return
-		}
+	link := r.URL.String()[1:]
+	baseLink, err := db.GetDB(link)
+	fmt.Println(link, baseLink, err)
+	if link == "" || err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-	w.WriteHeader(http.StatusBadRequest)
+	w.Header().Set("Location", baseLink)
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
 func Router() chi.Router {
