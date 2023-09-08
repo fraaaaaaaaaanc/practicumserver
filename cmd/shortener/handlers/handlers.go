@@ -16,7 +16,7 @@ var LocalURL string = "http://localhost:8080/"
 // Обработчик Post запроса
 func PostRequest(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
-	if utils.ValidContentType(contentType) || r.URL.String() != "/" {
+	if !utils.ValidContentType(contentType) || r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
