@@ -22,5 +22,5 @@ func GetDB(link string) (string, error) {
 			return k, nil
 		}
 	}
-	return "", errors.New("Bad link")
+	return "", errors.New("bad link")
 }
