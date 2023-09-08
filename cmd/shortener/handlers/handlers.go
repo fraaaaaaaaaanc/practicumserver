@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"practicumserver/cmd/shortener/db"
 	"practicumserver/cmd/shortener/utils"
-	"slices"
-	"strings"
 )
 
 var encodigs []string = []string{"charset=utf-8", "charset=iso-8859-1", "charset=windows-1251", "charset=us-ascii"}
@@ -18,17 +16,9 @@ var LocalURL string = "http://localhost:8080/"
 // Обработчик Post запроса
 func PostRequest(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
-
-	if strings.HasPrefix(contentType, "text/plain") || r.URL.String() != "/" {
+	if utils.ValidContentType(contentType) || r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
-	}
-	splitContentType := strings.Split(contentType, ";")
-	if len(splitContentType) > 1 {
-		if !slices.Contains(encodigs, splitContentType[1]) {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
 	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil || string(body) == "" {
