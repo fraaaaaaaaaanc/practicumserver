@@ -1,6 +1,8 @@
 package config
 
-import "flag"
+import (
+	"flag"
+)
 
 type Flags struct {
 	HostFlag  string
@@ -11,7 +13,7 @@ func ParseFlags() *Flags {
 	flags := &Flags{}
 
 	flag.StringVar(&flags.HostFlag, "a", ":8080", "address and port to run server")
-	flag.StringVar(&flags.ShortLink, "b", "http://localhost:8080/", "address and port to run server")
+	flag.StringVar(&flags.ShortLink, "b", "http://localhost:8080", "address and port to run server")
 
 	flag.Parse()
 

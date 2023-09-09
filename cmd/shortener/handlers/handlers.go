@@ -23,6 +23,7 @@ func PostRequest(w http.ResponseWriter, r *http.Request, flags *config.Flags) {
 		return
 	}
 	defer r.Body.Close()
+
 	srtLink := utils.LinkShortening()
 	avlblSrtLink, err := db.SetDB(string(link), srtLink)
 	if err != nil {
