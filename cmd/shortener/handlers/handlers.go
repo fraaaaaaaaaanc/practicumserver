@@ -31,7 +31,7 @@ func PostRequest(w http.ResponseWriter, r *http.Request, flags *config.Flags) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	_, _ = w.Write([]byte(flags.ShortLink + srtLink))
+	_, _ = w.Write([]byte(flags.ShortLink + "/" + srtLink))
 }
 
 // Обработчик Get запроса
