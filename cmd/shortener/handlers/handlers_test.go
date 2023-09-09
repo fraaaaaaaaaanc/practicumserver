@@ -6,26 +6,28 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"practicumserver/cmd/shortener/config"
 	"strings"
 	"testing"
 )
 
-type wantPost struct {
-	statusCode  int
-	contentType string
-}
-type request struct {
-	body        io.Reader
-	contentType string
-}
-
 // Функция тестирования Post запроса
 func TestPostRequest(t *testing.T) {
+	type wantPost struct {
+		statusCode  int
+		contentType string
+	}
+	type request struct {
+		body        io.Reader
+		contentType string
+	}
+	flags := config.ParseFlags()
 	tests := []struct {
 		name    string
 		want    wantPost
 		url     string
 		request request
+		flag    *config.Flags
 	}{
 		{
 			name: "test one!",
@@ -37,7 +39,8 @@ func TestPostRequest(t *testing.T) {
 				body:        strings.NewReader("http://hlijutdqqmefpt.net/zeosh/sthbp"),
 				contentType: "text/plain; charset=utf-8",
 			},
-			url: "/",
+			url:  "/",
+			flag: flags,
 		},
 		{
 			name: "test two!",
@@ -49,7 +52,8 @@ func TestPostRequest(t *testing.T) {
 				body:        strings.NewReader("http://hlijutdqqmefpt.net/zeosh/sthbp"),
 				contentType: "json",
 			},
-			url: "/",
+			url:  "/",
+			flag: flags,
 		},
 		{
 			name: "test three!",
@@ -61,7 +65,8 @@ func TestPostRequest(t *testing.T) {
 				body:        strings.NewReader(""),
 				contentType: "text/plain; charset=utf-8",
 			},
-			url: "/",
+			url:  "/",
+			flag: flags,
 		},
 	}
 	for _, tt := range tests {
@@ -69,7 +74,7 @@ func TestPostRequest(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, tt.url, tt.request.body)
 			request.Header.Set("Content-Type", tt.request.contentType)
 			w := httptest.NewRecorder()
-			PostRequest(w, request)
+			PostRequest(w, request, tt.flag)
 
 			res := w.Result()
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
