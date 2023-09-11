@@ -37,7 +37,7 @@ func (h *Hp) Set(addres string) error {
 	}
 	hp := strings.Split(addres, ":")
 	if len(hp) != 2 {
-		return errors.New("Need address in a form host:port")
+		return errors.New("need address in a form host:port")
 	}
 	port, err := strconv.Atoi(hp[1])
 	if err != nil {
