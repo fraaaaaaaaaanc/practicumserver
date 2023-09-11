@@ -5,14 +5,13 @@ import (
 	"os"
 )
 
-func ParseFlags() *Flags {
-	flags := newFlags()
+func ParseConfFlugs() *Flags {
+	flags := ParseFlags()
+	ParseEnv(flags)
+	return flags
+}
 
-	flag.Var(&flags.Hp, "a", "address and port to run server")
-	flag.StringVar(&flags.ShortLink, "b", flags.ShortLink, "address and port to run server")
-
-	flag.Parse()
-
+func ParseEnv(flags *Flags) {
 	if baseURLEnv := os.Getenv("BASE_URL"); baseURLEnv != "" {
 		flags.ShortLink = baseURLEnv
 	}
@@ -20,6 +19,15 @@ func ParseFlags() *Flags {
 	if servAdrEnv := os.Getenv("SERVER_ADDRESS"); servAdrEnv != "" {
 		flags.Set(servAdrEnv)
 	}
+}
+
+func ParseFlags() *Flags {
+	flags := newFlags()
+
+	flag.Var(&flags.Hp, "a", "address and port to run server")
+	flag.StringVar(&flags.ShortLink, "b", flags.ShortLink, "address and port to run server")
+
+	flag.Parse()
 
 	return &flags
 }
