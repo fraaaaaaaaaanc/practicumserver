@@ -17,8 +17,8 @@ func ParseFlags() *Flags {
 		flags.ShortLink = servAdrEnv
 	}
 
-	if baseUrlEnv := os.Getenv("BASE_URL"); baseUrlEnv != "" {
-		flags.Set(baseUrlEnv)
+	if baseURLEnv := os.Getenv("BASE_URL"); baseURLEnv != "" {
+		flags.Set(baseURLEnv)
 	}
 
 	return &flags
