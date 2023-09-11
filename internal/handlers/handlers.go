@@ -4,7 +4,7 @@ import (
 	"io"
 	"net/http"
 	"practicumserver/internal/config"
-	"practicumserver/internal/db"
+	"practicumserver/internal/storage"
 	utils2 "practicumserver/internal/utils"
 )
 
@@ -25,7 +25,7 @@ func PostRequest(w http.ResponseWriter, r *http.Request, flags *config.Flags) {
 	defer r.Body.Close()
 
 	srtLink := utils2.LinkShortening()
-	avlblSrtLink, err := db.SetDB(string(link), srtLink)
+	avlblSrtLink, err := storage.SetData(string(link), srtLink)
 	if err != nil {
 		srtLink = avlblSrtLink
 	}
@@ -38,7 +38,7 @@ func PostRequest(w http.ResponseWriter, r *http.Request, flags *config.Flags) {
 // Обработчик Get запроса
 func GetRequest(w http.ResponseWriter, r *http.Request) {
 	link := r.URL.String()[1:]
-	baseLink, err := db.GetDB(link)
+	baseLink, err := storage.GetData(link)
 	if link == "" || err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
