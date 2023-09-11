@@ -8,14 +8,14 @@ import (
 )
 
 func main() {
-	flags := config.ParseFlags()
-
-	if err := run(flags); err != nil {
+	if err := run(); err != nil {
 		panic(err)
 	}
 }
 
-func run(flags *config.Flags) error {
+func run() error {
+	flags := config.ParseFlags()
+
 	fmt.Println("Running server on", flags.String())
 	return http.ListenAndServe(flags.String(), router.Router(flags))
 }
