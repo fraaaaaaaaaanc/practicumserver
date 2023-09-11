@@ -16,6 +16,6 @@ func main() {
 }
 
 func run(flags *config.Flags) error {
-	fmt.Println("Running server on", flags.HostFlag)
-	return http.ListenAndServe(flags.HostFlag, router.Router(flags))
+	fmt.Println("Running server on", flags.String())
+	return http.ListenAndServe(flags.String(), router.Router(flags))
 }
