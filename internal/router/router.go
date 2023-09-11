@@ -3,8 +3,8 @@ package router
 import (
 	"github.com/go-chi/chi"
 	"net/http"
-	"practicumserver/cmd/shortener/config"
 	"practicumserver/cmd/shortener/handlers"
+	"practicumserver/internal/config"
 )
 
 func Router(flags *config.Flags) chi.Router {

@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"practicumserver/cmd/shortener/config"
+	config2 "practicumserver/internal/config"
 	"strings"
 	"testing"
 )
@@ -21,13 +21,13 @@ func TestPostRequest(t *testing.T) {
 		body        io.Reader
 		contentType string
 	}
-	flags := config.ParseFlags()
+	flags := config2.ParseFlags()
 	tests := []struct {
 		name    string
 		want    wantPost
 		url     string
 		request request
-		flag    *config.Flags
+		flag    *config2.Flags
 	}{
 		{
 			name: "test one!",

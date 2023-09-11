@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"practicumserver/cmd/shortener/config"
-	"practicumserver/cmd/shortener/router"
+	"practicumserver/internal/config"
+	"practicumserver/internal/router"
 )
 
 func main() {

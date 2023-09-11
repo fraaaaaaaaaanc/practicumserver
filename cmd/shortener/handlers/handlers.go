@@ -3,9 +3,9 @@ package handlers
 import (
 	"io"
 	"net/http"
-	"practicumserver/cmd/shortener/config"
-	"practicumserver/cmd/shortener/db"
-	"practicumserver/cmd/shortener/utils"
+	"practicumserver/internal/config"
+	"practicumserver/internal/db"
+	utils2 "practicumserver/internal/utils"
 )
 
 var encodigs []string = []string{"charset=utf-8", "charset=iso-8859-1", "charset=windows-1251", "charset=us-ascii"}
@@ -13,7 +13,7 @@ var encodigs []string = []string{"charset=utf-8", "charset=iso-8859-1", "charset
 // Обработчик Post запроса
 func PostRequest(w http.ResponseWriter, r *http.Request, flags *config.Flags) {
 	contentType := r.Header.Get("Content-Type")
-	if !utils.ValidContentType(contentType) || r.URL.String() != "/" {
+	if !utils2.ValidContentType(contentType) || r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -24,7 +24,7 @@ func PostRequest(w http.ResponseWriter, r *http.Request, flags *config.Flags) {
 	}
 	defer r.Body.Close()
 
-	srtLink := utils.LinkShortening()
+	srtLink := utils2.LinkShortening()
 	avlblSrtLink, err := db.SetDB(string(link), srtLink)
 	if err != nil {
 		srtLink = avlblSrtLink
