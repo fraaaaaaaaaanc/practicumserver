@@ -5,7 +5,7 @@ import (
 )
 
 var shortUrls = map[string]string{
-	"http://test": "test",
+	"http://test": "test", // Значение "http://test" заданно для тестирования
 }
 
 func SetDB(key, id string) (string, error) {
@@ -22,5 +22,5 @@ func GetDB(link string) (string, error) {
 			return k, nil
 		}
 	}
-	return "", errors.New("bad link")
+	return "", errors.New("the initial link is missing")
 }
