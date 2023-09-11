@@ -13,12 +13,12 @@ func ParseFlags() *Flags {
 
 	flag.Parse()
 
-	if servAdrEnv := os.Getenv("SERVER_ADDRESS"); servAdrEnv != "" {
-		flags.ShortLink = servAdrEnv
+	if baseURLEnv := os.Getenv("BASE_URL"); baseURLEnv != "" {
+		flags.ShortLink = baseURLEnv
 	}
 
-	if baseURLEnv := os.Getenv("BASE_URL"); baseURLEnv != "" {
-		flags.Set(baseURLEnv)
+	if servAdrEnv := os.Getenv("SERVER_ADDRESS"); servAdrEnv != "" {
+		flags.Set(servAdrEnv)
 	}
 
 	return &flags
