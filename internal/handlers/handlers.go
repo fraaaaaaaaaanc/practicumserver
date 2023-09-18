@@ -1,17 +1,21 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"practicumserver/internal/config"
-	"practicumserver/internal/storage"
+	storage2 "practicumserver/internal/storage"
 	utils2 "practicumserver/internal/utils"
 )
 
 var encodigs []string = []string{"charset=utf-8", "charset=iso-8859-1", "charset=windows-1251", "charset=us-ascii"}
 
+type Handlers struct {
+}
+
 // Обработчик Post запроса
-func PostRequest(w http.ResponseWriter, r *http.Request, flags *config.Flags) {
+func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage storage2.Storage, flags *config.Flags) {
 	contentType := r.Header.Get("Content-Type")
 	if !utils2.ValidContentType(contentType) || r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -24,22 +28,23 @@ func PostRequest(w http.ResponseWriter, r *http.Request, flags *config.Flags) {
 	}
 	defer r.Body.Close()
 
-	srtLink := utils2.LinkShortening()
-	avlblSrtLink, err := storage.SetData(string(link), srtLink)
+	shortLink := utils2.LinkShortening()
+	avlblSrtLink, err := storage.SetData(string(link), shortLink)
 	if err != nil {
-		srtLink = avlblSrtLink
+		shortLink = avlblSrtLink
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	_, _ = w.Write([]byte(flags.ShortLink + "/" + srtLink))
+	_, _ = w.Write([]byte(flags.ShortLink + "/" + shortLink))
 }
 
 // Обработчик Get запроса
-func GetRequest(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage storage2.Storage) {
 	link := r.URL.String()[1:]
 	baseLink, err := storage.GetData(link)
 	if link == "" || err != nil {
+		fmt.Println(link, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

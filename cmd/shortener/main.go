@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"practicumserver/internal/config"
 	"practicumserver/internal/router"
+	storage2 "practicumserver/internal/storage"
 )
 
 func main() {
@@ -15,7 +16,14 @@ func main() {
 
 func run() error {
 	flags := config.ParseConfFlugs()
+	var storage storage2.Storage
+	storage.ShortUrls = map[string]string{
+		"test": "http://test",
+	}
+	storage.ShortBoolUrls = map[string]bool{
+		"test": true,
+	}
 
 	fmt.Println("Running server on", flags.String())
-	return http.ListenAndServe(flags.String(), router.Router(flags))
+	return http.ListenAndServe(flags.String(), router.Router(flags, storage))
 }

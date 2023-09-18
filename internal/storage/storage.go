@@ -2,25 +2,32 @@ package storage
 
 import (
 	"errors"
+	"sync"
 )
 
-var shortUrls = map[string]string{
-	"http://test": "test", // Значение "http://test" заданно для тестирования
+type Storage struct {
+	ShortBoolUrls map[string]bool
+	ShortUrls     map[string]string
 }
 
-func SetData(key, id string) (string, error) {
-	if _, ok := shortUrls[key]; !ok {
-		shortUrls[key] = id
-		return id, nil
+func (s *Storage) SetData(link, shortLink string) (string, error) {
+	var sm sync.Mutex
+	sm.Lock()
+	defer sm.Unlock()
+	if _, ok := s.ShortBoolUrls[shortLink]; !ok {
+		s.ShortUrls[shortLink] = link
+		s.ShortBoolUrls[shortLink] = true
+		return link, nil
 	}
-	return shortUrls[key], errors.New("key already exists")
+	return s.ShortUrls[shortLink], errors.New("key already exists")
 }
 
-func GetData(link string) (string, error) {
-	for k, v := range shortUrls {
-		if v == link {
-			return k, nil
-		}
+func (s *Storage) GetData(shortLink string) (string, error) {
+	var sm sync.Mutex
+	sm.Lock()
+	defer sm.Unlock()
+	if _, ok := s.ShortBoolUrls[shortLink]; ok {
+		return s.ShortUrls[shortLink], nil
 	}
 	return "", errors.New("the initial link is missing")
 }

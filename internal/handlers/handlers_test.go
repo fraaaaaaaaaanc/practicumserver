@@ -7,12 +7,18 @@ import (
 	"net/http"
 	"net/http/httptest"
 	config2 "practicumserver/internal/config"
+	storage2 "practicumserver/internal/storage"
 	"strings"
 	"testing"
 )
 
 // Функция тестирования Post запроса
 func TestPostRequest(t *testing.T) {
+	var handlers Handlers
+	var storage storage2.Storage
+	storage.ShortUrls = map[string]string{
+		"http://test": "test",
+	}
 	type wantPost struct {
 		statusCode  int
 		contentType string
@@ -74,7 +80,7 @@ func TestPostRequest(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, tt.url, tt.request.body)
 			request.Header.Set("Content-Type", tt.request.contentType)
 			w := httptest.NewRecorder()
-			PostRequest(w, request, tt.flag)
+			handlers.PostRequest(w, request, storage, tt.flag)
 
 			res := w.Result()
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
@@ -94,6 +100,11 @@ func TestPostRequest(t *testing.T) {
 
 // Функция тестирования Get запроса
 func TestGetRequest(t *testing.T) {
+	var handlers Handlers
+	var storage storage2.Storage
+	storage.ShortUrls = map[string]string{
+		"http://test": "test",
+	}
 	type wantGet struct {
 		statusCode int
 		Location   string
@@ -124,7 +135,7 @@ func TestGetRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, tt.adress, nil)
 			w := httptest.NewRecorder()
-			GetRequest(w, request)
+			handlers.GetRequest(w, request, storage)
 
 			res := w.Result()
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
