@@ -17,7 +17,10 @@ func TestPostRequest(t *testing.T) {
 	var handlers Handlers
 	var storage storage2.Storage
 	storage.ShortUrls = map[string]string{
-		"http://test": "test",
+		"test": "http://test",
+	}
+	storage.ShortBoolUrls = map[string]bool{
+		"test": true,
 	}
 	type wantPost struct {
 		statusCode  int
@@ -103,7 +106,10 @@ func TestGetRequest(t *testing.T) {
 	var handlers Handlers
 	var storage storage2.Storage
 	storage.ShortUrls = map[string]string{
-		"http://test": "test",
+		"test": "http://test",
+	}
+	storage.ShortBoolUrls = map[string]bool{
+		"test": true,
 	}
 	type wantGet struct {
 		statusCode int
