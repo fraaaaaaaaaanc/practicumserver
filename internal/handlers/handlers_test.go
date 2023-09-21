@@ -15,13 +15,7 @@ import (
 // Функция тестирования Post запроса
 func TestPostRequest(t *testing.T) {
 	var handlers Handlers
-	var storage storage2.Storage
-	storage.ShortUrls = map[string]string{
-		"test": "http://test",
-	}
-	storage.ShortBoolUrls = map[string]bool{
-		"test": true,
-	}
+	storage := storage2.NewStorage()
 	type wantPost struct {
 		statusCode  int
 		contentType string
@@ -104,13 +98,7 @@ func TestPostRequest(t *testing.T) {
 // Функция тестирования Get запроса
 func TestGetRequest(t *testing.T) {
 	var handlers Handlers
-	var storage storage2.Storage
-	storage.ShortUrls = map[string]string{
-		"test": "http://test",
-	}
-	storage.ShortBoolUrls = map[string]bool{
-		"test": true,
-	}
+	storage := storage2.NewStorage()
 	type wantGet struct {
 		statusCode int
 		Location   string
