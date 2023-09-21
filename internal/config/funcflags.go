@@ -13,6 +13,7 @@ type Hp struct {
 type Flags struct {
 	Hp
 	ShortLink string
+	LogLevel  string
 }
 
 func newFlags() Flags {
@@ -22,6 +23,7 @@ func newFlags() Flags {
 			Host: "localhost",
 			Port: 8080,
 		},
+		LogLevel: "info",
 	}
 }
 

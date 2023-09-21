@@ -8,12 +8,23 @@ import (
 type Storage struct {
 	ShortBoolUrls map[string]bool
 	ShortUrls     map[string]string
+	sm            sync.Mutex
+}
+
+func NewStorage() *Storage {
+	return &Storage{
+		ShortBoolUrls: map[string]bool{
+			"test": true,
+		},
+		ShortUrls: map[string]string{
+			"test": "http://test",
+		},
+	}
 }
 
 func (s *Storage) SetData(link, shortLink string) (string, error) {
-	var sm sync.Mutex
-	sm.Lock()
-	defer sm.Unlock()
+	s.sm.Lock()
+	defer s.sm.Unlock()
 	if _, ok := s.ShortBoolUrls[shortLink]; !ok {
 		s.ShortUrls[shortLink] = link
 		s.ShortBoolUrls[shortLink] = true
@@ -23,9 +34,8 @@ func (s *Storage) SetData(link, shortLink string) (string, error) {
 }
 
 func (s *Storage) GetData(shortLink string) (string, error) {
-	var sm sync.Mutex
-	sm.Lock()
-	defer sm.Unlock()
+	s.sm.Lock()
+	defer s.sm.Unlock()
 	if _, ok := s.ShortBoolUrls[shortLink]; ok {
 		return s.ShortUrls[shortLink], nil
 	}

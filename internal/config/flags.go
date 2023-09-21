@@ -19,6 +19,10 @@ func ParseEnv(flags *Flags) {
 	if servAdrEnv := os.Getenv("SERVER_ADDRESS"); servAdrEnv != "" {
 		flags.Set(servAdrEnv)
 	}
+
+	if LogLvlEnv := os.Getenv("LOG_LEVEL"); LogLvlEnv != "" {
+		flags.LogLevel = LogLvlEnv
+	}
 }
 
 func ParseFlags() *Flags {
@@ -26,6 +30,7 @@ func ParseFlags() *Flags {
 
 	flag.Var(&flags.Hp, "a", "address and port to run server")
 	flag.StringVar(&flags.ShortLink, "b", flags.ShortLink, "address and port to run server")
+	flag.StringVar(&flags.LogLevel, "l", flags.LogLevel, "log level")
 
 	flag.Parse()
 
