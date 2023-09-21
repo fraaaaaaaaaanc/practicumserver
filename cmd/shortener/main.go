@@ -21,7 +21,7 @@ func run() error {
 		return err
 	}
 
-	storage := *storage2.NewStorage()
+	storage := storage2.NewStorage()
 
 	fmt.Println("Running server on", flags.String())
 	return http.ListenAndServe(flags.String(), router.Router(flags, storage))

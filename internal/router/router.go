@@ -9,7 +9,7 @@ import (
 	storage2 "practicumserver/internal/storage"
 )
 
-func Router(flags *config.Flags, storage storage2.Storage) chi.Router {
+func Router(flags *config.Flags, storage *storage2.Storage) chi.Router {
 	var handlers handlers2.Handlers
 
 	r := chi.NewRouter()

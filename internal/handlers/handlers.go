@@ -15,7 +15,7 @@ type Handlers struct {
 }
 
 // Обработчик Post запроса
-func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage storage2.Storage, flags *config.Flags) {
+func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *storage2.Storage, flags *config.Flags) {
 	contentType := r.Header.Get("Content-Type")
 	if !utils2.ValidContentType(contentType) || r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -40,7 +40,7 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage s
 }
 
 // Обработчик Get запроса
-func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage storage2.Storage) {
+func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage *storage2.Storage) {
 	link := r.URL.String()[1:]
 	baseLink, err := storage.GetData(link)
 	if link == "" || err != nil {
