@@ -31,6 +31,7 @@ func ParseFlags() *Flags {
 	flag.Var(&flags.Hp, "a", "address and port to run server")
 	flag.StringVar(&flags.ShortLink, "b", flags.ShortLink, "address and port to run server")
 	flag.StringVar(&flags.LogLevel, "l", flags.LogLevel, "log level")
+	flag.BoolVar(&flags.FileLog, "fl", flags.FileLog, "On file logging")
 
 	flag.Parse()
 

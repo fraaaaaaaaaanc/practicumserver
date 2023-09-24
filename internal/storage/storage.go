@@ -1,12 +1,13 @@
 package storage
 
 import (
-	"errors"
+	"practicumserver/internal/utils"
 	"sync"
 )
 
 type Storage struct {
 	ShortBoolUrls map[string]bool
+	LinkBoolUrls  map[string]bool
 	ShortUrls     map[string]string
 	sm            sync.Mutex
 }
@@ -16,28 +17,49 @@ func NewStorage() *Storage {
 		ShortBoolUrls: map[string]bool{
 			"test": true,
 		},
+		LinkBoolUrls: map[string]bool{
+			"http://test": true,
+		},
 		ShortUrls: map[string]string{
 			"test": "http://test",
 		},
 	}
 }
 
-func (s *Storage) SetData(link, shortLink string) (string, error) {
-	s.sm.Lock()
-	defer s.sm.Unlock()
-	if _, ok := s.ShortBoolUrls[shortLink]; !ok {
-		s.ShortUrls[shortLink] = link
-		s.ShortBoolUrls[shortLink] = true
-		return link, nil
+func (s *Storage) СheckShortLink() string {
+	shortLink := utils.LinkShortening()
+	for s.ShortBoolUrls[shortLink] == true {
+		shortLink = utils.LinkShortening()
 	}
-	return s.ShortUrls[shortLink], errors.New("key already exists")
+	return shortLink
 }
 
-func (s *Storage) GetData(shortLink string) (string, error) {
+func (s *Storage) GetNewShortLink(link string) string {
+	s.sm.Lock()
+	defer s.sm.Unlock()
+	if _, ok := s.LinkBoolUrls[link]; ok {
+		for shortLink, longLink := range s.ShortUrls {
+			if longLink == link {
+				return shortLink
+			}
+		}
+	}
+	return s.СheckShortLink()
+}
+
+func (s *Storage) SetData(link, shortLink string) {
+	s.sm.Lock()
+	defer s.sm.Unlock()
+	s.ShortUrls[shortLink] = link
+	s.ShortBoolUrls[shortLink] = true
+	s.LinkBoolUrls[link] = true
+}
+
+func (s *Storage) GetData(shortLink string) (string, bool) {
 	s.sm.Lock()
 	defer s.sm.Unlock()
 	if _, ok := s.ShortBoolUrls[shortLink]; ok {
-		return s.ShortUrls[shortLink], nil
+		return s.ShortUrls[shortLink], false
 	}
-	return "", errors.New("the initial link is missing")
+	return "", true
 }

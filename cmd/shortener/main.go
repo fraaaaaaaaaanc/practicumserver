@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"go.uber.org/zap"
 	"net/http"
 	"practicumserver/internal/config"
 	"practicumserver/internal/logger"
 	"practicumserver/internal/router"
 	storage2 "practicumserver/internal/storage"
+	"practicumserver/internal/utils"
 )
 
 func main() {
@@ -16,13 +17,13 @@ func main() {
 }
 
 func run() error {
+	//creating an instance of flags, storage, logs
 	flags := config.ParseConfFlugs()
-	if err := logger.Initialize(flags.LogLevel); err != nil {
-		return err
-	}
-
+	log := logger.NewZapLogger(flags)
 	storage := storage2.NewStorage()
 
-	fmt.Println("Running server on", flags.String())
-	return http.ListenAndServe(flags.String(), router.Router(flags, storage))
+	defer utils.Closelog(log, flags)
+
+	log.Info("Server start", zap.String("Running server on", flags.String()))
+	return http.ListenAndServe(flags.String(), router.Router(flags, storage, log.Logger))
 }

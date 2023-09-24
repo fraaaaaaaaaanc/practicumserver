@@ -1,0 +1,6 @@
+{"level":"info","ts":1695472655.801243,"caller":"logger/newlogger.go:58","msg":"Server start","Running server on":"localhost:8080"}
+{"level":"info","ts":1695472700.5546355,"caller":"logger/info.go:57","msg":"Received request","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1695472853.309707,"caller":"logger/info.go:57","msg":"Received request","uri":"/XVvmVsVoIgu","method":"GET","status":307,"duration":0,"size":0}
+{"level":"info","ts":1695571376.0551069,"caller":"logger/newlogger.go:51","msg":"Server start","Running server on":"localhost:8080"}
+{"level":"info","ts":1695571453.586697,"caller":"logger/info.go:57","msg":"Received request","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1695571490.2207775,"caller":"logger/info.go:57","msg":"Received request","uri":"/7C7MFkN1bMb","method":"GET","status":307,"duration":0,"size":0}
