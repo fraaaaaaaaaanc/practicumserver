@@ -30,7 +30,7 @@ func TestPostRequest(t *testing.T) {
 		want    wantPost
 		url     string
 		request request
-		flag    *config2.Flags
+		flag    string
 	}{
 		{
 			name: "test one!",
@@ -43,7 +43,7 @@ func TestPostRequest(t *testing.T) {
 				contentType: "text/plain; charset=utf-8",
 			},
 			url:  "/",
-			flag: flags,
+			flag: flags.ShortLink,
 		},
 		{
 			name: "test two!",
@@ -56,7 +56,7 @@ func TestPostRequest(t *testing.T) {
 				contentType: "json",
 			},
 			url:  "/",
-			flag: flags,
+			flag: flags.ShortLink,
 		},
 		{
 			name: "test three!",
@@ -69,7 +69,7 @@ func TestPostRequest(t *testing.T) {
 				contentType: "text/plain; charset=utf-8",
 			},
 			url:  "/",
-			flag: flags,
+			flag: flags.ShortLink,
 		},
 	}
 	for _, tt := range tests {
