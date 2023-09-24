@@ -1,0 +1,3 @@
+{"level":"info","ts":1695577201.8786085,"caller":"logger/newlogger.go:53","msg":"Server start","Running server on":"localhost:8080"}
+{"level":"info","ts":1695577253.5627313,"caller":"logger/newlogger.go:53","msg":"Server start","Running server on":"localhost:8080"}
+{"level":"info","ts":1695577267.8277645,"caller":"logger/handlerlog.go:58","msg":"Received request","uri":"/","method":"POST","status":201,"duration":0,"size":26}

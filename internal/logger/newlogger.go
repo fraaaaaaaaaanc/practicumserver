@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
@@ -36,7 +37,8 @@ func NewZapLogger(flags *config.Flags) *ZapLogger {
 		writeSyncer := zapcore.AddSync(file)
 
 		fileConfig := zap.NewProductionConfig()
-		fileConfig.OutputPaths = []string{file.Name()}
+		fmt.Println(file.Name())
+		//fileConfig.OutputPaths = []string{file.Name()}
 		cores = append(cores, zapcore.NewCore(zapcore.NewJSONEncoder(fileConfig.EncoderConfig),
 			writeSyncer,
 			zapcore.InfoLevel))
