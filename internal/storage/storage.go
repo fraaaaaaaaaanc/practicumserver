@@ -28,7 +28,7 @@ func NewStorage() *Storage {
 
 func (s *Storage) СheckShortLink() string {
 	shortLink := utils.LinkShortening()
-	for s.ShortBoolUrls[shortLink] == true {
+	for s.ShortBoolUrls[shortLink] {
 		shortLink = utils.LinkShortening()
 	}
 	return shortLink
