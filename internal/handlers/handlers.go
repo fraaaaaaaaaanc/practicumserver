@@ -63,16 +63,16 @@ func (h *Handlers) PostRequestApiShorten(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	if req.LongUrl == "" {
+	if req.LongURL == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	shortLink := strg.GetNewShortLink(req.LongUrl)
-	strg.SetData(req.LongUrl, shortLink)
+	shortLink := strg.GetNewShortLink(req.LongURL)
+	strg.SetData(req.LongURL, shortLink)
 
 	resp := models.Response{
-		ShortUrl: flag + "/" + shortLink,
+		ShortURL: flag + "/" + shortLink,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
