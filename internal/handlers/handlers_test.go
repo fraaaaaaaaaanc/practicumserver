@@ -274,6 +274,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 			res := w.Result()
 
 			resBody, err := io.ReadAll(res.Body)
+			require.NoError(t, err)
 			assert.Equal(t, tt.wantPost.expectedCode, res.StatusCode)
 			assert.Equal(t, tt.wantPost.expectCt, res.Header.Get("Content-Type"))
 			if tt.wantPost.expectedBody != "" {
