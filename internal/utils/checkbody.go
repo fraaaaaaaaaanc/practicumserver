@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 )
 
 func IsRequestBodyEmpty(body io.Reader) bool {
 	fmt.Println(body)
-	bodyCopy, err := ioutil.ReadAll(body)
+	bodyCopy, err := io.ReadAll(body)
 	if err != nil {
 		return true
 	}
