@@ -6,8 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	config2 "practicumserver/internal/config"
-	storage2 "practicumserver/internal/storage"
+	"practicumserver/internal/storage"
 	"strings"
 	"testing"
 )
@@ -15,7 +14,7 @@ import (
 // Функция тестирования Post запроса
 func TestPostRequest(t *testing.T) {
 	var handlers Handlers
-	storage := storage2.NewStorage()
+	storage := storage.NewStorage()
 	type wantPost struct {
 		statusCode  int
 		contentType string
@@ -24,7 +23,6 @@ func TestPostRequest(t *testing.T) {
 		body        io.Reader
 		contentType string
 	}
-	flags := config2.ParseFlags()
 	tests := []struct {
 		name    string
 		want    wantPost
@@ -43,7 +41,7 @@ func TestPostRequest(t *testing.T) {
 				contentType: "text/plain; charset=utf-8",
 			},
 			url:  "/",
-			flag: flags.ShortLink,
+			flag: "http://localhost:8080",
 		},
 		{
 			name: "test two!",
@@ -56,7 +54,7 @@ func TestPostRequest(t *testing.T) {
 				contentType: "json",
 			},
 			url:  "/",
-			flag: flags.ShortLink,
+			flag: "http://localhost:8080",
 		},
 		{
 			name: "test three!",
@@ -69,7 +67,7 @@ func TestPostRequest(t *testing.T) {
 				contentType: "text/plain; charset=utf-8",
 			},
 			url:  "/",
-			flag: flags.ShortLink,
+			flag: "http://localhost:8080",
 		},
 	}
 	for _, tt := range tests {
@@ -98,7 +96,7 @@ func TestPostRequest(t *testing.T) {
 // Функция тестирования Get запроса
 func TestGetRequest(t *testing.T) {
 	var handlers Handlers
-	storage := storage2.NewStorage()
+	storage := storage.NewStorage()
 	type wantGet struct {
 		statusCode int
 		Location   string
@@ -135,6 +133,153 @@ func TestGetRequest(t *testing.T) {
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
 			assert.Equal(t, tt.want.Location, res.Header.Get("location"))
 			err := res.Body.Close()
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestPostRequestApiShorten(t *testing.T) {
+	var handlers Handlers
+	storage := storage.NewStorage()
+	type wantPost struct {
+		expectedCode int
+		expectedBody string
+		expectCt     string
+	}
+	type request struct {
+		method      string
+		body        string
+		contentType string
+		flag        string
+		url         string
+	}
+	tests := []struct {
+		name string
+		request
+		wantPost
+	}{
+		{
+			name: "method_post_without_body",
+			request: request{
+				method:      http.MethodPost,
+				body:        "",
+				contentType: "application/json; charset=utf-8",
+				flag:        "http://localhost:8080",
+				url:         "http://localhost:8080/api/shorten",
+			},
+			wantPost: wantPost{
+				expectedCode: http.StatusInternalServerError,
+				expectedBody: "",
+				expectCt:     "",
+			},
+		},
+		{
+			name: "method_post_with_wrong_content_type",
+			request: request{
+				method:      http.MethodPost,
+				body:        "",
+				contentType: "text/plain; charset=utf-8",
+				flag:        "http://localhost:8080",
+				url:         "http://localhost:8080/api/shorten",
+			},
+			wantPost: wantPost{
+				expectedCode: http.StatusBadRequest,
+				expectedBody: "",
+				expectCt:     "",
+			},
+		},
+		{
+			name: "method_post_with_any_url",
+			request: request{
+				method:      http.MethodPost,
+				body:        "",
+				contentType: "text/plain; charset=utf-8",
+				flag:        "http://localhost:8080",
+				url:         "http://localhost:8080/api/shorten/test",
+			},
+			wantPost: wantPost{
+				expectedCode: http.StatusBadRequest,
+				expectedBody: "",
+				expectCt:     "",
+			},
+		},
+		{
+			name: "method_post_unsupported_type_value",
+			request: request{
+				method:      http.MethodPost,
+				body:        `{"url": 1}`,
+				contentType: "application/json; charset=utf-8",
+				flag:        "http://localhost:8080",
+				url:         "http://localhost:8080/api/shorten",
+			},
+			wantPost: wantPost{
+				expectedCode: http.StatusInternalServerError,
+				expectedBody: "",
+				expectCt:     "",
+			},
+		},
+		{
+			name: "method_post_unsupported_type_tag",
+			request: request{
+				method:      http.MethodPost,
+				body:        `{"test": "http://test"}`,
+				contentType: "application/json; charset=utf-8",
+				flag:        "http://localhost:8080",
+				url:         "http://localhost:8080/api/shorten",
+			},
+			wantPost: wantPost{
+				expectedCode: http.StatusBadRequest,
+				expectedBody: "",
+				expectCt:     "",
+			},
+		},
+		{
+			name: "method_post_success",
+			request: request{
+				method:      http.MethodPost,
+				body:        `{"url":"http://test"}`,
+				contentType: "application/json",
+				flag:        "http://localhost:8080",
+				url:         "http://localhost:8080/api/shorten",
+			},
+			wantPost: wantPost{
+				expectedCode: http.StatusCreated,
+				expectedBody: `{"result":"http://localhost:8080/test"}`,
+				expectCt:     "application/json",
+			},
+		},
+		{
+			name: "method_post_success_сheck_url_flag",
+			request: request{
+				method:      http.MethodPost,
+				body:        `{"url":"http://test"}`,
+				contentType: "application/json; charset=utf-8",
+				flag:        "http://test:8080",
+				url:         "http://localhost:8080/api/shorten",
+			},
+			wantPost: wantPost{
+				expectedCode: http.StatusCreated,
+				expectedBody: `{"result":"http://test:8080/test"}`,
+				expectCt:     "application/json",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodGet, "/api/shorten", strings.NewReader(tt.request.body))
+			request.Header.Set("Content-Type", tt.request.contentType)
+			w := httptest.NewRecorder()
+			handlers.PostRequestApiShorten(w, request, storage, tt.request.flag)
+
+			res := w.Result()
+
+			resBody, err := io.ReadAll(res.Body)
+			assert.Equal(t, tt.wantPost.expectedCode, res.StatusCode)
+			assert.Equal(t, tt.wantPost.expectCt, res.Header.Get("Content-Type"))
+			if tt.wantPost.expectedBody != "" {
+				assert.JSONEq(t, tt.wantPost.expectedBody, string(resBody))
+			}
+			err = res.Body.Close()
 			require.NoError(t, err)
 		})
 	}

@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
-	storage2 "practicumserver/internal/storage"
-	utils2 "practicumserver/internal/utils"
+	"practicumserver/internal/models"
+	"practicumserver/internal/storage"
+	"practicumserver/internal/utils"
 )
 
 var encodigs []string = []string{"charset=utf-8", "charset=iso-8859-1", "charset=windows-1251", "charset=us-ascii"}
@@ -13,9 +15,9 @@ type Handlers struct {
 }
 
 // Обработчик Post запроса
-func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *storage2.Storage, flags string) {
+func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *storage.Storage, flags string) {
 	contentType := r.Header.Get("Content-Type")
-	if !utils2.ValidContentType(contentType) || r.URL.String() != "/" {
+	if !utils.ValidContentType(contentType, "text/plain") || r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -35,7 +37,7 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *
 }
 
 // Обработчик Get запроса
-func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage *storage2.Storage) {
+func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage *storage.Storage) {
 	shortLink := r.URL.String()[1:]
 	baseLink, boolRes := storage.GetData(shortLink)
 	if shortLink == "" || boolRes {
@@ -44,4 +46,41 @@ func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage *s
 	}
 	w.Header().Set("Location", baseLink)
 	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (h *Handlers) PostRequestApiShorten(w http.ResponseWriter, r *http.Request, strg *storage.Storage, flag string) {
+	contentType := r.Header.Get("Content-Type")
+	if !utils.ValidContentType(contentType, "application/json") ||
+		r.URL.String() != "/api/shorten" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var req models.Request
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(&req); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if req.LongUrl == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	shortLink := strg.GetNewShortLink(req.LongUrl)
+	strg.SetData(req.LongUrl, shortLink)
+
+	resp := models.Response{
+		ShortUrl: flag + "/" + shortLink,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	enc := json.NewEncoder(w)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(resp); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 }

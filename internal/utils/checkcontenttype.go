@@ -2,10 +2,10 @@ package utils
 
 import "strings"
 
-func ValidContentType(str string) bool {
-	contentType := strings.Split(str, "; ")
+func ValidContentType(typeCt string, validCtType string) bool {
+	contentType := strings.Split(typeCt, "; ")
 
-	if len(contentType) > 0 && contentType[0] == "text/plain" {
+	if len(contentType) > 0 && contentType[0] == validCtType {
 		if len(contentType) == 2 {
 			validCharsets := map[string]bool{
 				"charset=utf-8":        true,
