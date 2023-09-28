@@ -2,10 +2,10 @@ package models
 
 type (
 	Request struct {
-		LongUrl string `json:"url"`
+		LongURL string `json:"url"`
 	}
 
 	Response struct {
-		ShortUrl string `json:"result"`
+		ShortURL string `json:"result"`
 	}
 )
