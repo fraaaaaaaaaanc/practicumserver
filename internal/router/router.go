@@ -23,7 +23,7 @@ func Router(flags *config.Flags, storage *storage2.Storage, log *zap.Logger) chi
 		handlers.PostRequest(w, r, storage, flags.ShortLink)
 	})
 	r.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
-		handlers.PostRequestApiShorten(w, r, storage, flags.ShortLink)
+		handlers.PostRequestAPIShorten(w, r, storage, flags.ShortLink)
 	})
 
 	return r
