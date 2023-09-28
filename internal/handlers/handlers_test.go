@@ -269,7 +269,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, "/api/shorten", strings.NewReader(tt.request.body))
 			request.Header.Set("Content-Type", tt.request.contentType)
 			w := httptest.NewRecorder()
-			handlers.PostRequestApiShorten(w, request, storage, tt.request.flag)
+			handlers.PostRequestAPIShorten(w, request, storage, tt.request.flag)
 
 			res := w.Result()
 

@@ -48,7 +48,7 @@ func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage *s
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (h *Handlers) PostRequestApiShorten(w http.ResponseWriter, r *http.Request, strg *storage.Storage, flag string) {
+func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request, strg *storage.Storage, flag string) {
 	contentType := r.Header.Get("Content-Type")
 	if !utils.ValidContentType(contentType, "application/json") ||
 		r.URL.String() != "/api/shorten" {
