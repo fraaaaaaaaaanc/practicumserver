@@ -106,11 +106,6 @@ func MiddlewareGzipHandleFunc(h http.Handler) http.Handler {
 					w.WriteHeader(http.StatusBadRequest)
 					return
 				}
-				contentType, err = utils.DetermineContentType(r)
-				if err != nil {
-					w.WriteHeader(http.StatusBadRequest)
-					return
-				}
 				r.Header.Set("Content-Type", contentType)
 				r.Body = cr
 			}
