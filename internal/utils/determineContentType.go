@@ -17,7 +17,7 @@ func IsText(data []byte) bool {
 	return true
 }
 
-func isJson(data []byte) bool {
+func isJSON(data []byte) bool {
 	var jsonData interface{}
 	if err := json.Unmarshal(data, &jsonData); err != nil {
 		return true
