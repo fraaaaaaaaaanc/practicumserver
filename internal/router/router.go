@@ -4,18 +4,19 @@ import (
 	"github.com/go-chi/chi"
 	"go.uber.org/zap"
 	"net/http"
+	"practicumserver/internal/compress"
 	"practicumserver/internal/config"
-	handlers2 "practicumserver/internal/handlers"
+	"practicumserver/internal/handlers"
 	"practicumserver/internal/logger"
-	storage2 "practicumserver/internal/storage"
+	"practicumserver/internal/storage"
 )
 
-func Router(flags *config.Flags, storage *storage2.Storage, log *zap.Logger) chi.Router {
-	var handlers handlers2.Handlers
+func Router(flags *config.Flags, storage *storage.Storage, log *zap.Logger) chi.Router {
+	var handlers handlers.Handlers
 
 	r := chi.NewRouter()
 
-	r.Use(logger.MiddlewareLogHandleFunc(log))
+	r.Use(logger.MiddlewareLogHandleFunc(log), compress.MiddlewareGzipHandleFunc)
 	r.Get("/{id:[a-zA-Z0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		handlers.GetRequest(w, r, storage)
 	})
