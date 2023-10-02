@@ -55,7 +55,6 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 	fmt.Println(contentType)
 	if !utils.ValidContentType(contentType, "application/json") ||
 		r.URL.String() != "/api/shorten" {
-		fmt.Println("1")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -69,7 +68,6 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 	}
 
 	if req.LongURL == "" {
-		fmt.Println(2)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -86,7 +84,6 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
 	if err := enc.Encode(resp); err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

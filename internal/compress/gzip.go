@@ -103,6 +103,7 @@ func MiddlewareGzipHandleFunc(h http.Handler) http.Handler {
 				}
 				contentType, err := utils.DetermineContentType(r)
 				if err != nil {
+					fmt.Println(err)
 					w.WriteHeader(http.StatusBadRequest)
 					return
 				}
