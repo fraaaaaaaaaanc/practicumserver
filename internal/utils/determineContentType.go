@@ -31,7 +31,7 @@ func DetermineContentType(req *http.Request) (string, error) {
 		return "", err
 	}
 	req.Body = io.NopCloser(bytes.NewReader(copyData))
-	if isJson(copyData) {
+	if isJSON(copyData) {
 		return "application/json", nil
 	}
 	if IsText(copyData) {
