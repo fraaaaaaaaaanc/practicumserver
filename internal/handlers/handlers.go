@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"practicumserver/internal/models"
@@ -17,6 +18,7 @@ type Handlers struct {
 // Обработчик Post запроса
 func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *storage.Storage, flags string) {
 	contentType := r.Header.Get("Content-Type")
+	fmt.Println(contentType)
 	if !utils.ValidContentType(contentType, "text/plain") || r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -50,8 +52,10 @@ func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage *s
 
 func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request, strg *storage.Storage, flag string) {
 	contentType := r.Header.Get("Content-Type")
+	fmt.Println(contentType)
 	if !utils.ValidContentType(contentType, "application/json") ||
 		r.URL.String() != "/api/shorten" {
+		fmt.Println("1")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -59,11 +63,13 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 	var req models.Request
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&req); err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if req.LongURL == "" {
+		fmt.Println(2)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -80,6 +86,7 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
 	if err := enc.Encode(resp); err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

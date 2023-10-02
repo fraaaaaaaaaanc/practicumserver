@@ -70,6 +70,8 @@ func TestMiddlewareGzipHandleFunc(t *testing.T) {
 		resp, err := http.DefaultClient.Do(r)
 		assert.NoError(t, err)
 
+		defer resp.Body.Close()
+
 		zr, err := gzip.NewReader(resp.Body)
 		assert.NoError(t, err)
 
