@@ -17,7 +17,7 @@ type HandlerFuncAdapter func(http.ResponseWriter, *http.Request, *storage.Storag
 func (h HandlerFuncAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	strg := storage.NewStorage()
 	flagURL := "http://localhost:8080"
-	flagPath := "tmp\\short.json"
+	flagPath := "/tmp/short-url-db.json"
 	h(w, r, strg, flagURL, flagPath)
 }
 

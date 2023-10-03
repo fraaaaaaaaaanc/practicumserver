@@ -28,7 +28,7 @@ func newFlags() Flags {
 		},
 		LogLevel:    "info",
 		FileLog:     false,
-		FileStorage: "tmp\\short.json",
+		FileStorage: "/tmp/short-url-db.json",
 	}
 }
 

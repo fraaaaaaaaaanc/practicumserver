@@ -43,7 +43,7 @@ func TestPostRequest(t *testing.T) {
 			},
 			url:      "/",
 			flagURL:  "http://localhost:8080",
-			flagpath: "tmp\\short.json",
+			flagpath: "/tmp/short-url-db.json",
 		},
 		{
 			name: "test two!",
@@ -57,7 +57,7 @@ func TestPostRequest(t *testing.T) {
 			},
 			url:      "/",
 			flagURL:  "http://localhost:8080",
-			flagpath: "tmp\\short.json",
+			flagpath: "/tmp/short-url-db.json",
 		},
 		{
 			name: "test three!",
@@ -71,7 +71,7 @@ func TestPostRequest(t *testing.T) {
 			},
 			url:      "/",
 			flagURL:  "http://localhost:8080",
-			flagpath: "tmp\\short.json",
+			flagpath: "/tmp/short-url-db.json",
 		},
 	}
 	for _, tt := range tests {
@@ -170,7 +170,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        "",
 				contentType: "application/json; charset=utf-8",
 				flagURL:     "http://localhost:8080",
-				flagpath:    "tmp\\short.json",
+				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -186,7 +186,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        "",
 				contentType: "text/plain; charset=utf-8",
 				flagURL:     "http://localhost:8080",
-				flagpath:    "tmp\\short.json",
+				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -202,7 +202,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        "",
 				contentType: "text/plain; charset=utf-8",
 				flagURL:     "http://localhost:8080",
-				flagpath:    "tmp\\short.json",
+				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten/test",
 			},
 			wantPost: wantPost{
@@ -218,7 +218,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        `{"url": 1}`,
 				contentType: "application/json; charset=utf-8",
 				flagURL:     "http://localhost:8080",
-				flagpath:    "tmp\\short.json",
+				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -234,7 +234,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        `{"test": "http://test"}`,
 				contentType: "application/json; charset=utf-8",
 				flagURL:     "http://localhost:8080",
-				flagpath:    "tmp\\short.json",
+				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -250,7 +250,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        `{"url":"http://test"}`,
 				contentType: "application/json",
 				flagURL:     "http://localhost:8080",
-				flagpath:    "tmp\\short.json",
+				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -266,7 +266,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        `{"url":"http://test"}`,
 				contentType: "application/json; charset=utf-8",
 				flagURL:     "http://test:8080",
-				flagpath:    "tmp\\short.json",
+				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
