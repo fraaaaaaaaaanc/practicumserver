@@ -28,7 +28,7 @@ func newFlags() Flags {
 		},
 		LogLevel:    "info",
 		FileLog:     false,
-		FileStorage: "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
+		FileStorage: "tmp\\short.json",
 	}
 }
 

@@ -17,7 +17,7 @@ type HandlerFuncAdapter func(http.ResponseWriter, *http.Request, *storage.Storag
 func (h HandlerFuncAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	strg := storage.NewStorage()
 	flagURL := "http://localhost:8080"
-	flagPath := "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json"
+	flagPath := "tmp\\short.json"
 	h(w, r, strg, flagURL, flagPath)
 }
 
