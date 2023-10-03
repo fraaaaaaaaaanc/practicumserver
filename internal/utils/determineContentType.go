@@ -3,16 +3,16 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
-	"io"
-	"net/http"
+	"fmt"
 )
 
 func IsJSON(data []byte) bool {
 	var js interface{}
-	if err := json.Unmarshal(data, &js); err == nil {
-		return true
+	if err := json.Unmarshal(data, &js); err != nil {
+		fmt.Println(data, err)
+		return false
 	}
-	return false
+	return true
 }
 
 func IsText(data []byte) bool {
@@ -25,17 +25,12 @@ func IsText(data []byte) bool {
 	return true
 }
 
-func DetermineContentType(req *http.Request) (string, error) {
-	copyData, err := io.ReadAll(req.Body)
-	if err != nil {
-		return "", err
+func DetermineContentType(data []byte) string {
+	if IsJSON(data) {
+		return "application/json"
 	}
-	req.Body = io.NopCloser(bytes.NewReader(copyData))
-	if IsJSON(copyData) {
-		return "application/json", nil
+	if IsText(data) {
+		return "text/plain"
 	}
-	if IsText(copyData) {
-		return "text/plain", nil
-	}
-	return "", err
+	return ""
 }

@@ -29,13 +29,9 @@ func TestMiddlewareGzipHandleFunc(t *testing.T) {
 	srv := httptest.NewServer(handler)
 	defer srv.Close()
 
-	requestBody := `{
-    	"url": "http://test"
-	}`
+	requestBody := `{"url": "http://test"}`
 
-	successBody := `{
-    	"result": "http://localhost:8080/test"
-	}`
+	successBody := `{"result": "http://localhost:8080/test"}`
 
 	t.Run("send_gzip", func(t *testing.T) {
 		buf := bytes.NewBuffer(nil)

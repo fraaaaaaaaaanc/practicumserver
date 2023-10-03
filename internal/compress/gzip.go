@@ -1,6 +1,7 @@
 package compress
 
 import (
+	"bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -101,14 +102,13 @@ func MiddlewareGzipHandleFunc(h http.Handler) http.Handler {
 					w.WriteHeader(http.StatusInternalServerError)
 					return
 				}
-				contentType, err := utils.DetermineContentType(r)
+				data, err := io.ReadAll(cr)
 				if err != nil {
-					fmt.Println(err)
 					w.WriteHeader(http.StatusBadRequest)
 					return
 				}
-				r.Header.Set("Content-Type", contentType)
-				r.Body = cr
+				r.Body = io.NopCloser(bytes.NewReader(data))
+				r.Header.Set("Content-Type", utils.DetermineContentType(data))
 			}
 		}
 		defer func() {

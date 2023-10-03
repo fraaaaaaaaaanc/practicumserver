@@ -68,6 +68,7 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 	}
 
 	if req.LongURL == "" {
+		fmt.Println(2)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
