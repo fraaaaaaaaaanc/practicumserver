@@ -3,13 +3,11 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 )
 
 func IsJSON(data []byte) bool {
 	var js interface{}
 	if err := json.Unmarshal(data, &js); err != nil {
-		fmt.Println(data, err)
 		return false
 	}
 	return true
