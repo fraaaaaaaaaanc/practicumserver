@@ -16,7 +16,7 @@ type Handlers struct {
 }
 
 // Обработчик Post запроса
-func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *storage.Storage, flags string,
+func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *storage.Storage, flaglink string,
 	fileStorage string) {
 	contentType := r.Header.Get("Content-Type")
 	fmt.Println(contentType)
@@ -36,7 +36,7 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	_, _ = w.Write([]byte(flags + "/" + shortLink))
+	_, _ = w.Write([]byte(flaglink + "/" + shortLink))
 }
 
 // Обработчик Get запроса
@@ -51,7 +51,7 @@ func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage *s
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request, strg *storage.Storage, flag string,
+func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request, strg *storage.Storage, flaglink string,
 	fileStorage string) {
 	contentType := r.Header.Get("Content-Type")
 	fmt.Println(contentType)
@@ -78,7 +78,7 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 	strg.SetData(req.LongURL, shortLink)
 
 	resp := models.Response{
-		ShortURL: flag + "/" + shortLink,
+		ShortURL: flaglink + "/" + shortLink,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
