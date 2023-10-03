@@ -26,15 +26,16 @@ func NewStorage() *Storage {
 	}
 }
 
-func (s *Storage) СheckShortLink() string {
+func (s *Storage) СheckShortLink(link, fileStorage string) string {
 	shortLink := utils.LinkShortening()
 	for s.ShortBoolUrls[shortLink] {
 		shortLink = utils.LinkShortening()
 	}
+	NewWrite(fileStorage, link, shortLink)
 	return shortLink
 }
 
-func (s *Storage) GetNewShortLink(link string) string {
+func (s *Storage) GetNewShortLink(link, fileStorage string) string {
 	s.sm.Lock()
 	defer s.sm.Unlock()
 	if _, ok := s.LinkBoolUrls[link]; ok {
@@ -44,7 +45,7 @@ func (s *Storage) GetNewShortLink(link string) string {
 			}
 		}
 	}
-	return s.СheckShortLink()
+	return s.СheckShortLink(link, fileStorage)
 }
 
 func (s *Storage) SetData(link, shortLink string) {

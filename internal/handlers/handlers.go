@@ -16,7 +16,8 @@ type Handlers struct {
 }
 
 // Обработчик Post запроса
-func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *storage.Storage, flags string) {
+func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *storage.Storage, flags string,
+	fileStorage string) {
 	contentType := r.Header.Get("Content-Type")
 	fmt.Println(contentType)
 	if !utils.ValidContentType(contentType, "text/plain") || r.URL.String() != "/" {
@@ -30,7 +31,7 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *
 	}
 	defer r.Body.Close()
 
-	shortLink := storage.GetNewShortLink(string(link))
+	shortLink := storage.GetNewShortLink(string(link), fileStorage)
 	storage.SetData(string(link), shortLink)
 
 	w.Header().Set("Content-Type", "text/plain")
@@ -50,7 +51,8 @@ func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage *s
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request, strg *storage.Storage, flag string) {
+func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request, strg *storage.Storage, flag string,
+	fileStorage string) {
 	contentType := r.Header.Get("Content-Type")
 	fmt.Println(contentType)
 	if !utils.ValidContentType(contentType, "application/json") ||
@@ -68,12 +70,11 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 	}
 
 	if req.LongURL == "" {
-		fmt.Println(2)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	shortLink := strg.GetNewShortLink(req.LongURL)
+	shortLink := strg.GetNewShortLink(req.LongURL, fileStorage)
 	strg.SetData(req.LongURL, shortLink)
 
 	resp := models.Response{

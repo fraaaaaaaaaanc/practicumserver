@@ -27,7 +27,7 @@ func (c *compressWriter) Header() http.Header {
 
 func (c *compressWriter) Write(b []byte) (int, error) {
 	if len(b) < 1 ||
-		(c.Header().Get("Content-Type") != "text/plain" &&
+		(c.Header().Get("Content-Type") != "text/html" &&
 			c.Header().Get("Content-Type") != "application/json") {
 		return c.w.Write(b)
 	}

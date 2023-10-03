@@ -12,10 +12,11 @@ type Hp struct {
 }
 type Flags struct {
 	Hp
-	ShortLink  string
-	LogLevel   string
-	FileLog    bool
-	ConsoleLog bool
+	ShortLink   string
+	LogLevel    string
+	FileLog     bool
+	ConsoleLog  bool
+	FileStorage string
 }
 
 func newFlags() Flags {
@@ -25,8 +26,9 @@ func newFlags() Flags {
 			Host: "localhost",
 			Port: 8080,
 		},
-		LogLevel: "info",
-		FileLog:  false,
+		LogLevel:    "info",
+		FileLog:     false,
+		FileStorage: "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
 	}
 }
 

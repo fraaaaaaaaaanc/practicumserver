@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func IsJSON(data []byte) bool {
+func isJSON(data []byte) bool {
 	var js interface{}
 	if err := json.Unmarshal(data, &js); err != nil {
 		fmt.Println(data, err)
@@ -15,7 +15,7 @@ func IsJSON(data []byte) bool {
 	return true
 }
 
-func IsText(data []byte) bool {
+func isText(data []byte) bool {
 	controlChars := "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0B\x0C\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F"
 	for _, char := range controlChars {
 		if bytes.IndexByte(data, byte(char)) != -1 {
@@ -26,10 +26,10 @@ func IsText(data []byte) bool {
 }
 
 func DetermineContentType(data []byte) string {
-	if IsJSON(data) {
+	if isJSON(data) {
 		return "application/json"
 	}
-	if IsText(data) {
+	if isText(data) {
 		return "text/plain"
 	}
 	return ""
