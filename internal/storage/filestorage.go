@@ -9,8 +9,8 @@ import (
 )
 
 type shortenUrlData struct {
-	ShortUrl    string `json:"short_url"`
-	OriginalUrl string `json:"original_url"`
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
 }
 
 func NewRead(filename string, strg *Storage) {
@@ -90,7 +90,7 @@ func NewRead(filename string, strg *Storage) {
 
 		var myData shortenUrlData
 		if err := json.NewDecoder(strings.NewReader(line)).Decode(&myData); err == nil {
-			strg.SetData(myData.OriginalUrl, myData.OriginalUrl)
+			strg.SetData(myData.OriginalURL, myData.OriginalURL)
 		} else {
 			log.Fatal(err)
 		}
@@ -103,8 +103,8 @@ func NewWrite(filename, link, shortlink string) {
 		log.Fatal(err)
 	}
 	myData := shortenUrlData{
-		ShortUrl:    shortlink,
-		OriginalUrl: link,
+		ShortURL:    shortlink,
+		OriginalURL: link,
 	}
 
 	if err := json.NewEncoder(file).Encode(myData); err != nil {

@@ -12,12 +12,13 @@ import (
 	"testing"
 )
 
-type HandlerFuncAdapter func(http.ResponseWriter, *http.Request, *storage.Storage, string)
+type HandlerFuncAdapter func(http.ResponseWriter, *http.Request, *storage.Storage, string, string)
 
 func (h HandlerFuncAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	strg := storage.NewStorage()
-	flag := "http://localhost:8080"
-	h(w, r, strg, flag)
+	flaglink := "http://localhost:8080"
+	flagpath := "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json"
+	h(w, r, strg, flaglink, flagpath)
 }
 
 func TestMiddlewareGzipHandleFunc(t *testing.T) {
