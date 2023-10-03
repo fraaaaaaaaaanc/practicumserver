@@ -3,6 +3,7 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -35,6 +36,7 @@ func NewRead(filename string, strg *Storage) {
 func NewWrite(filename, link, shortlink string) {
 	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
+		fmt.Println("((((((")
 		log.Fatal(err)
 	}
 	myData := shortenURLData{

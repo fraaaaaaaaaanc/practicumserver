@@ -68,7 +68,7 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	shortLink := strg.GetNewShortLink(req.LongURL, ShortLink)
+	shortLink := strg.GetNewShortLink(req.LongURL, FileStorage)
 	strg.SetData(req.LongURL, shortLink)
 
 	resp := models.Response{
