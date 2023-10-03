@@ -24,11 +24,12 @@ func TestPostRequest(t *testing.T) {
 		contentType string
 	}
 	tests := []struct {
-		name    string
-		want    wantPost
-		url     string
-		request request
-		flag    string
+		name     string
+		want     wantPost
+		url      string
+		request  request
+		flagURL  string
+		flagpath string
 	}{
 		{
 			name: "test one!",
@@ -40,8 +41,9 @@ func TestPostRequest(t *testing.T) {
 				body:        strings.NewReader("http://hlijutdqqmefpt.net/zeosh/sthbp"),
 				contentType: "text/plain; charset=utf-8",
 			},
-			url:  "/",
-			flag: "http://localhost:8080",
+			url:      "/",
+			flagURL:  "http://localhost:8080",
+			flagpath: "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
 		},
 		{
 			name: "test two!",
@@ -53,8 +55,9 @@ func TestPostRequest(t *testing.T) {
 				body:        strings.NewReader("http://hlijutdqqmefpt.net/zeosh/sthbp"),
 				contentType: "json",
 			},
-			url:  "/",
-			flag: "http://localhost:8080",
+			url:      "/",
+			flagURL:  "http://localhost:8080",
+			flagpath: "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
 		},
 		{
 			name: "test three!",
@@ -66,8 +69,9 @@ func TestPostRequest(t *testing.T) {
 				body:        strings.NewReader(""),
 				contentType: "text/plain; charset=utf-8",
 			},
-			url:  "/",
-			flag: "http://localhost:8080",
+			url:      "/",
+			flagURL:  "http://localhost:8080",
+			flagpath: "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
 		},
 	}
 	for _, tt := range tests {
@@ -75,7 +79,7 @@ func TestPostRequest(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, tt.url, tt.request.body)
 			request.Header.Set("Content-Type", tt.request.contentType)
 			w := httptest.NewRecorder()
-			handlers.PostRequest(w, request, storage, tt.flag)
+			handlers.PostRequest(w, request, storage, tt.flagURL, tt.flagpath)
 
 			res := w.Result()
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
@@ -150,7 +154,8 @@ func TestPostRequestApiShorten(t *testing.T) {
 		method      string
 		body        string
 		contentType string
-		flag        string
+		flagURL     string
+		flagpath    string
 		url         string
 	}
 	tests := []struct {
@@ -164,7 +169,8 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        "",
 				contentType: "application/json; charset=utf-8",
-				flag:        "http://localhost:8080",
+				flagURL:     "http://localhost:8080",
+				flagpath:    "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -179,7 +185,8 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        "",
 				contentType: "text/plain; charset=utf-8",
-				flag:        "http://localhost:8080",
+				flagURL:     "http://localhost:8080",
+				flagpath:    "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -194,7 +201,8 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        "",
 				contentType: "text/plain; charset=utf-8",
-				flag:        "http://localhost:8080",
+				flagURL:     "http://localhost:8080",
+				flagpath:    "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
 				url:         "http://localhost:8080/api/shorten/test",
 			},
 			wantPost: wantPost{
@@ -209,7 +217,8 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        `{"url": 1}`,
 				contentType: "application/json; charset=utf-8",
-				flag:        "http://localhost:8080",
+				flagURL:     "http://localhost:8080",
+				flagpath:    "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -224,7 +233,8 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        `{"test": "http://test"}`,
 				contentType: "application/json; charset=utf-8",
-				flag:        "http://localhost:8080",
+				flagURL:     "http://localhost:8080",
+				flagpath:    "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -239,7 +249,8 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        `{"url":"http://test"}`,
 				contentType: "application/json",
-				flag:        "http://localhost:8080",
+				flagURL:     "http://localhost:8080",
+				flagpath:    "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -254,7 +265,8 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        `{"url":"http://test"}`,
 				contentType: "application/json; charset=utf-8",
-				flag:        "http://test:8080",
+				flagURL:     "http://test:8080",
+				flagpath:    "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -269,7 +281,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, "/api/shorten", strings.NewReader(tt.request.body))
 			request.Header.Set("Content-Type", tt.request.contentType)
 			w := httptest.NewRecorder()
-			handlers.PostRequestAPIShorten(w, request, storage, tt.request.flag)
+			handlers.PostRequestAPIShorten(w, request, storage, tt.request.flagURL, tt.request.flagpath)
 
 			res := w.Result()
 

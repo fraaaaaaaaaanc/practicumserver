@@ -23,6 +23,9 @@ func ParseEnv(flags *Flags) {
 	if LogLvlEnv := os.Getenv("LOG_LEVEL"); LogLvlEnv != "" {
 		flags.LogLevel = LogLvlEnv
 	}
+	if fileStorageFile := os.Getenv("FILE_STORAGE_PATH"); fileStorageFile != "" {
+		flags.FileStorage = fileStorageFile
+	}
 }
 
 func ParseFlags() *Flags {
@@ -32,6 +35,7 @@ func ParseFlags() *Flags {
 	flag.StringVar(&flags.ShortLink, "b", flags.ShortLink, "address and port to run server")
 	flag.StringVar(&flags.LogLevel, "l", flags.LogLevel, "log level")
 	flag.BoolVar(&flags.FileLog, "fl", flags.FileLog, "On file logging")
+	flag.StringVar(&flags.FileStorage, "f", flags.FileStorage, "On file storage")
 
 	flag.Parse()
 

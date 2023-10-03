@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"practicumserver/internal/models"
@@ -16,9 +15,8 @@ type Handlers struct {
 }
 
 // Обработчик Post запроса
-func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *storage.Storage, flags string) {
+func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *storage.Storage, ShortLink, FileStorage string) {
 	contentType := r.Header.Get("Content-Type")
-	fmt.Println(contentType)
 	if !utils.ValidContentType(contentType, "text/plain") || r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -30,12 +28,12 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *
 	}
 	defer r.Body.Close()
 
-	shortLink := storage.GetNewShortLink(string(link))
+	shortLink := storage.GetNewShortLink(string(link), FileStorage)
 	storage.SetData(string(link), shortLink)
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	_, _ = w.Write([]byte(flags + "/" + shortLink))
+	_, _ = w.Write([]byte(ShortLink + "/" + shortLink))
 }
 
 // Обработчик Get запроса
@@ -50,7 +48,7 @@ func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage *s
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request, strg *storage.Storage, flag string) {
+func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request, strg *storage.Storage, ShortLink, FileStorage string) {
 	contentType := r.Header.Get("Content-Type")
 	if !utils.ValidContentType(contentType, "application/json") ||
 		r.URL.String() != "/api/shorten" {
@@ -61,7 +59,6 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 	var req models.Request
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&req); err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -71,11 +68,11 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	shortLink := strg.GetNewShortLink(req.LongURL)
+	shortLink := strg.GetNewShortLink(req.LongURL, ShortLink)
 	strg.SetData(req.LongURL, shortLink)
 
 	resp := models.Response{
-		ShortURL: flag + "/" + shortLink,
+		ShortURL: ShortLink + "/" + shortLink,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
