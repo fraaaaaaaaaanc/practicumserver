@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type shortenUrlData struct {
+type shortenURLData struct {
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
@@ -88,7 +88,7 @@ func NewRead(filename string, strg *Storage) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		var myData shortenUrlData
+		var myData shortenURLData
 		if err := json.NewDecoder(strings.NewReader(line)).Decode(&myData); err == nil {
 			strg.SetData(myData.OriginalURL, myData.OriginalURL)
 		} else {
@@ -102,7 +102,7 @@ func NewWrite(filename, link, shortlink string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	myData := shortenUrlData{
+	myData := shortenURLData{
 		ShortURL:    shortlink,
 		OriginalURL: link,
 	}
