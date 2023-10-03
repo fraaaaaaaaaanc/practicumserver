@@ -43,7 +43,7 @@ func TestPostRequest(t *testing.T) {
 			},
 			url:      "/",
 			flagURL:  "http://localhost:8080",
-			flagpath: "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
+			flagpath: "tmp\\short.json",
 		},
 		{
 			name: "test two!",
@@ -57,7 +57,7 @@ func TestPostRequest(t *testing.T) {
 			},
 			url:      "/",
 			flagURL:  "http://localhost:8080",
-			flagpath: "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
+			flagpath: "tmp\\short.json",
 		},
 		{
 			name: "test three!",
@@ -71,7 +71,7 @@ func TestPostRequest(t *testing.T) {
 			},
 			url:      "/",
 			flagURL:  "http://localhost:8080",
-			flagpath: "C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short.json",
+			flagpath: "tmp\\short.json",
 		},
 	}
 	for _, tt := range tests {
