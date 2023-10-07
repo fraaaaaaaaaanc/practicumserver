@@ -8,23 +8,24 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"practicumserver/internal/handlers"
-	"practicumserver/internal/storage"
 	"testing"
 )
 
-type HandlerFuncAdapter func(http.ResponseWriter, *http.Request, *storage.Storage, string, string)
+type HandlerFuncAdapter func(http.ResponseWriter, *http.Request)
 
 func (h HandlerFuncAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	strg := storage.NewStorage()
-	flagURL := "http://localhost:8080"
-	flagPath := "/tmp/short-url-db.json"
-	h(w, r, strg, flagURL, flagPath)
+	//flagURL := "http://localhost:8080"
+	//flagPath := "/tmp/short-url-db.json"
+	//hndlr := handlers.NewHandlers()
+	h(w, r)
 }
 
 func TestMiddlewareGzipHandleFunc(t *testing.T) {
-	var handlers handlers.Handlers
+	hndlrs := handlers.NewHandlers("http://localhost:8080",
+		"/tmp/short-url-db.json")
+	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
 
-	adapter := HandlerFuncAdapter(handlers.PostRequestAPIShorten)
+	adapter := HandlerFuncAdapter(hndlrs.PostRequestAPIShorten)
 	handler := MiddlewareGzipHandleFunc(adapter)
 
 	srv := httptest.NewServer(handler)
