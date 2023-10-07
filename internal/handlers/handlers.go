@@ -12,12 +12,26 @@ import (
 var encodigs []string = []string{"charset=utf-8", "charset=iso-8859-1", "charset=windows-1251", "charset=us-ascii"}
 
 type Handlers struct {
+	Storage     *storage.Storage
+	shortLink   string
+	fileStorage string
+}
+
+func NewHandlers(shortLink, fileStorage string) *Handlers {
+	strg := storage.NewStorage()
+
+	return &Handlers{
+		Storage:     strg,
+		shortLink:   shortLink,
+		fileStorage: fileStorage,
+	}
 }
 
 // Обработчик Post запроса
-func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *storage.Storage, ShortLink, FileStorage string) {
+func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
-	if !utils.ValidContentType(contentType, "text/plain") || r.URL.String() != "/" {
+	if (!utils.ValidContentType(contentType, "text/plain") && contentType != "application/x-gzip") ||
+		r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -28,18 +42,18 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request, storage *
 	}
 	defer r.Body.Close()
 
-	shortLink := storage.GetNewShortLink(string(link), FileStorage)
-	storage.SetData(string(link), shortLink)
+	newShortLink := h.Storage.GetNewShortLink(string(link), h.fileStorage)
+	h.Storage.SetData(string(link), newShortLink)
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	_, _ = w.Write([]byte(ShortLink + "/" + shortLink))
+	_, _ = w.Write([]byte(h.shortLink + "/" + newShortLink))
 }
 
 // Обработчик Get запроса
-func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage *storage.Storage) {
+func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request) {
 	shortLink := r.URL.String()[1:]
-	baseLink, boolRes := storage.GetData(shortLink)
+	baseLink, boolRes := h.Storage.GetData(shortLink)
 	if shortLink == "" || boolRes {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -48,9 +62,9 @@ func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request, storage *s
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request, strg *storage.Storage, ShortLink, FileStorage string) {
+func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
-	if !utils.ValidContentType(contentType, "application/json") ||
+	if (!utils.ValidContentType(contentType, "application/json") && contentType != "application/x-gzip") ||
 		r.URL.String() != "/api/shorten" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -68,11 +82,11 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	shortLink := strg.GetNewShortLink(req.LongURL, FileStorage)
-	strg.SetData(req.LongURL, shortLink)
+	newShortLink := h.Storage.GetNewShortLink(req.LongURL, h.fileStorage)
+	h.Storage.SetData(req.LongURL, newShortLink)
 
 	resp := models.Response{
-		ShortURL: ShortLink + "/" + shortLink,
+		ShortURL: h.shortLink + "/" + newShortLink,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

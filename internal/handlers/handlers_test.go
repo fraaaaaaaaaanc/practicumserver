@@ -6,15 +6,15 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"practicumserver/internal/storage"
 	"strings"
 	"testing"
 )
 
 // Функция тестирования Post запроса
 func TestPostRequest(t *testing.T) {
-	var handlers Handlers
-	storage := storage.NewStorage()
+	hndlrs := NewHandlers("http://localhost:8080",
+		"/tmp/short-url-db.json")
+	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
 	type wantPost struct {
 		statusCode  int
 		contentType string
@@ -24,12 +24,10 @@ func TestPostRequest(t *testing.T) {
 		contentType string
 	}
 	tests := []struct {
-		name     string
-		want     wantPost
-		url      string
-		request  request
-		flagURL  string
-		flagpath string
+		name    string
+		want    wantPost
+		url     string
+		request request
 	}{
 		{
 			name: "test one!",
@@ -41,9 +39,7 @@ func TestPostRequest(t *testing.T) {
 				body:        strings.NewReader("http://hlijutdqqmefpt.net/zeosh/sthbp"),
 				contentType: "text/plain; charset=utf-8",
 			},
-			url:      "/",
-			flagURL:  "http://localhost:8080",
-			flagpath: "/tmp/short-url-db.json",
+			url: "/",
 		},
 		{
 			name: "test two!",
@@ -55,9 +51,7 @@ func TestPostRequest(t *testing.T) {
 				body:        strings.NewReader("http://hlijutdqqmefpt.net/zeosh/sthbp"),
 				contentType: "json",
 			},
-			url:      "/",
-			flagURL:  "http://localhost:8080",
-			flagpath: "/tmp/short-url-db.json",
+			url: "/",
 		},
 		{
 			name: "test three!",
@@ -69,9 +63,7 @@ func TestPostRequest(t *testing.T) {
 				body:        strings.NewReader(""),
 				contentType: "text/plain; charset=utf-8",
 			},
-			url:      "/",
-			flagURL:  "http://localhost:8080",
-			flagpath: "/tmp/short-url-db.json",
+			url: "/",
 		},
 	}
 	for _, tt := range tests {
@@ -79,7 +71,7 @@ func TestPostRequest(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, tt.url, tt.request.body)
 			request.Header.Set("Content-Type", tt.request.contentType)
 			w := httptest.NewRecorder()
-			handlers.PostRequest(w, request, storage, tt.flagURL, tt.flagpath)
+			hndlrs.PostRequest(w, request)
 
 			res := w.Result()
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
@@ -99,8 +91,9 @@ func TestPostRequest(t *testing.T) {
 
 // Функция тестирования Get запроса
 func TestGetRequest(t *testing.T) {
-	var handlers Handlers
-	storage := storage.NewStorage()
+	hndlrs := NewHandlers("http://localhost:8080",
+		"/tmp/short-url-db.json")
+	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
 	type wantGet struct {
 		statusCode int
 		Location   string
@@ -131,7 +124,7 @@ func TestGetRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, tt.adress, nil)
 			w := httptest.NewRecorder()
-			handlers.GetRequest(w, request, storage)
+			hndlrs.GetRequest(w, request)
 
 			res := w.Result()
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
@@ -143,8 +136,9 @@ func TestGetRequest(t *testing.T) {
 }
 
 func TestPostRequestApiShorten(t *testing.T) {
-	var handlers Handlers
-	storage := storage.NewStorage()
+	hndlrs := NewHandlers("http://localhost:8080",
+		"/tmp/short-url-db.json")
+	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
 	type wantPost struct {
 		expectedCode int
 		expectedBody string
@@ -154,8 +148,6 @@ func TestPostRequestApiShorten(t *testing.T) {
 		method      string
 		body        string
 		contentType string
-		flagURL     string
-		flagpath    string
 		url         string
 	}
 	tests := []struct {
@@ -169,8 +161,6 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        "",
 				contentType: "application/json; charset=utf-8",
-				flagURL:     "http://localhost:8080",
-				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -185,8 +175,6 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        "",
 				contentType: "text/plain; charset=utf-8",
-				flagURL:     "http://localhost:8080",
-				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -201,8 +189,6 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        "",
 				contentType: "text/plain; charset=utf-8",
-				flagURL:     "http://localhost:8080",
-				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten/test",
 			},
 			wantPost: wantPost{
@@ -217,8 +203,6 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        `{"url": 1}`,
 				contentType: "application/json; charset=utf-8",
-				flagURL:     "http://localhost:8080",
-				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -233,8 +217,6 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        `{"test": "http://test"}`,
 				contentType: "application/json; charset=utf-8",
-				flagURL:     "http://localhost:8080",
-				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
@@ -249,29 +231,11 @@ func TestPostRequestApiShorten(t *testing.T) {
 				method:      http.MethodPost,
 				body:        `{"url":"http://test"}`,
 				contentType: "application/json",
-				flagURL:     "http://localhost:8080",
-				flagpath:    "/tmp/short-url-db.json",
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
 				expectedCode: http.StatusCreated,
 				expectedBody: `{"result":"http://localhost:8080/test"}`,
-				expectCt:     "application/json",
-			},
-		},
-		{
-			name: "method_post_success_сheck_url_flag",
-			request: request{
-				method:      http.MethodPost,
-				body:        `{"url":"http://test"}`,
-				contentType: "application/json; charset=utf-8",
-				flagURL:     "http://test:8080",
-				flagpath:    "/tmp/short-url-db.json",
-				url:         "http://localhost:8080/api/shorten",
-			},
-			wantPost: wantPost{
-				expectedCode: http.StatusCreated,
-				expectedBody: `{"result":"http://test:8080/test"}`,
 				expectCt:     "application/json",
 			},
 		},
@@ -281,7 +245,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, "/api/shorten", strings.NewReader(tt.request.body))
 			request.Header.Set("Content-Type", tt.request.contentType)
 			w := httptest.NewRecorder()
-			handlers.PostRequestAPIShorten(w, request, storage, tt.request.flagURL, tt.request.flagpath)
+			hndlrs.PostRequestAPIShorten(w, request)
 
 			res := w.Result()
 

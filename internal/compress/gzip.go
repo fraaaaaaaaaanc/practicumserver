@@ -1,12 +1,10 @@
 package compress
 
 import (
-	"bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
 	"net/http"
-	"practicumserver/internal/utils"
 )
 
 type compressWriter struct {
@@ -102,13 +100,7 @@ func MiddlewareGzipHandleFunc(h http.Handler) http.Handler {
 					w.WriteHeader(http.StatusInternalServerError)
 					return
 				}
-				data, err := io.ReadAll(cr)
-				if err != nil {
-					w.WriteHeader(http.StatusBadRequest)
-					return
-				}
-				r.Body = io.NopCloser(bytes.NewReader(data))
-				r.Header.Set("Content-Type", utils.DetermineContentType(data))
+				r.Body = cr
 			}
 		}
 		defer func() {

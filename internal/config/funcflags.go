@@ -12,7 +12,7 @@ type Hp struct {
 }
 type Flags struct {
 	Hp
-	ShortLink   string
+	Prefix      string
 	LogLevel    string
 	FileLog     bool
 	ConsoleLog  bool
@@ -21,13 +21,14 @@ type Flags struct {
 
 func newFlags() Flags {
 	return Flags{
-		ShortLink: "http://localhost:8080",
+		Prefix: "http://localhost:8080",
 		Hp: Hp{
 			Host: "localhost",
 			Port: 8080,
 		},
-		LogLevel:    "info",
-		FileLog:     false,
+		LogLevel: "info",
+		FileLog:  false,
+		//FileStorage: "C:/Users/frant/go/go1.21.0/bin/pkg/mod/github.com/fraaaaaaaaaanc/practicumserver/internal/tmp/short-url-db.json",
 		FileStorage: "/tmp/short-url-db.json",
 	}
 }

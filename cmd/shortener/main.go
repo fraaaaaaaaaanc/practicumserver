@@ -6,7 +6,6 @@ import (
 	"practicumserver/internal/config"
 	"practicumserver/internal/logger"
 	"practicumserver/internal/router"
-	"practicumserver/internal/storage"
 	"practicumserver/internal/utils"
 )
 
@@ -20,11 +19,9 @@ func run() error {
 	//creating an instance of flags, storage, logs
 	flags := config.ParseConfFlugs()
 	log := logger.NewZapLogger(flags)
-	strg := storage.NewStorage()
-	storage.NewRead(flags.FileStorage, strg)
 
 	defer utils.Closelog(log, flags)
 
 	log.Info("Server start", zap.String("Running server on", flags.String()))
-	return http.ListenAndServe(flags.String(), router.Router(flags, strg, log.Logger))
+	return http.ListenAndServe(flags.String(), router.Router(log.Logger, flags.Prefix, flags.FileStorage))
 }

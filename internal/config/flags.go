@@ -13,7 +13,7 @@ func ParseConfFlugs() *Flags {
 
 func ParseEnv(flags *Flags) {
 	if baseURLEnv := os.Getenv("BASE_URL"); baseURLEnv != "" {
-		flags.ShortLink = baseURLEnv
+		flags.Prefix = baseURLEnv
 	}
 
 	if servAdrEnv := os.Getenv("SERVER_ADDRESS"); servAdrEnv != "" {
@@ -32,7 +32,7 @@ func ParseFlags() *Flags {
 	flags := newFlags()
 
 	flag.Var(&flags.Hp, "a", "address and port to run server")
-	flag.StringVar(&flags.ShortLink, "b", flags.ShortLink, "address and port to run server")
+	flag.StringVar(&flags.Prefix, "b", flags.Prefix, "address and port to run server")
 	flag.StringVar(&flags.LogLevel, "l", flags.LogLevel, "log level")
 	flag.BoolVar(&flags.FileLog, "fl", flags.FileLog, "On file logging")
 	flag.StringVar(&flags.FileStorage, "f", flags.FileStorage, "On file storage")
