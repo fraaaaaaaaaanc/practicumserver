@@ -13,6 +13,7 @@ import (
 // Функция тестирования Post запроса
 func TestPostRequest(t *testing.T) {
 	hndlrs := NewHandlers("http://localhost:8080",
+		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
 		"/tmp/short-url-db.json")
 	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
 	type wantPost struct {
@@ -92,6 +93,7 @@ func TestPostRequest(t *testing.T) {
 // Функция тестирования Get запроса
 func TestGetRequest(t *testing.T) {
 	hndlrs := NewHandlers("http://localhost:8080",
+		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
 		"/tmp/short-url-db.json")
 	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
 	type wantGet struct {
@@ -137,6 +139,7 @@ func TestGetRequest(t *testing.T) {
 
 func TestPostRequestApiShorten(t *testing.T) {
 	hndlrs := NewHandlers("http://localhost:8080",
+		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
 		"/tmp/short-url-db.json")
 	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
 	type wantPost struct {

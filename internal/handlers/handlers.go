@@ -23,7 +23,7 @@ type Handlers struct {
 	dbAdress    string
 }
 
-func NewHandlers(shortLink, fileStorage, dbAdress string) *Handlers {
+func NewHandlers(shortLink, dbAdress, fileStorage string) *Handlers {
 	strg := storage.NewStorage()
 
 	return &Handlers{

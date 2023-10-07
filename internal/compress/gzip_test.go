@@ -22,6 +22,7 @@ func (h HandlerFuncAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func TestMiddlewareGzipHandleFunc(t *testing.T) {
 	hndlrs := handlers.NewHandlers("http://localhost:8080",
+		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
 		"/tmp/short-url-db.json")
 	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
 

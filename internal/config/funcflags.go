@@ -27,11 +27,11 @@ func newFlags() Flags {
 			Host: "localhost",
 			Port: 8080,
 		},
-		LogLevel:    "info",
-		FileLog:     false,
-		FileStorage: "C:/Users/frant/go/go1.21.0/bin/pkg/mod/github.com/fraaaaaaaaaanc/practicumserver/internal/tmp/short-url-db.json",
-		//FileStorage: "/tmp/short-url-db.json",
-		DBAdress: "host=localhost user=postgres password=1234 dbname=video sslmode=disable",
+		LogLevel: "info",
+		FileLog:  false,
+		//FileStorage: "C:/Users/frant/go/go1.21.0/bin/pkg/mod/github.com/fraaaaaaaaaanc/practicumserver/internal/tmp/short-url-db.json",
+		FileStorage: "/tmp/short-url-db.json",
+		DBAdress:    "host=localhost user=postgres password=1234 dbname=video sslmode=disable",
 	}
 }
 
