@@ -23,5 +23,6 @@ func run() error {
 	defer utils.Closelog(log, flags)
 
 	log.Info("Server start", zap.String("Running server on", flags.String()))
-	return http.ListenAndServe(flags.String(), router.Router(log.Logger, flags.Prefix, flags.FileStorage))
+	return http.ListenAndServe(flags.String(), router.Router(log.Logger,
+		flags.Prefix, flags.FileStorage, flags.DBAdress))
 }

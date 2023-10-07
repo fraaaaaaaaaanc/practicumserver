@@ -1,12 +1,17 @@
 package handlers
 
 import (
+	"context"
+	"database/sql"
 	"encoding/json"
+	"fmt"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"io"
 	"net/http"
 	"practicumserver/internal/models"
 	"practicumserver/internal/storage"
 	"practicumserver/internal/utils"
+	"time"
 )
 
 var encodigs []string = []string{"charset=utf-8", "charset=iso-8859-1", "charset=windows-1251", "charset=us-ascii"}
@@ -15,15 +20,17 @@ type Handlers struct {
 	Storage     *storage.Storage
 	shortLink   string
 	fileStorage string
+	dbAdress    string
 }
 
-func NewHandlers(shortLink, fileStorage string) *Handlers {
+func NewHandlers(shortLink, fileStorage, dbAdress string) *Handlers {
 	strg := storage.NewStorage()
 
 	return &Handlers{
 		Storage:     strg,
 		shortLink:   shortLink,
 		fileStorage: fileStorage,
+		dbAdress:    dbAdress,
 	}
 }
 
@@ -60,6 +67,22 @@ func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Location", baseLink)
 	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (h *Handlers) GerRequestPing(w http.ResponseWriter, r *http.Request) {
+	db, err := sql.Open("pgx", h.dbAdress)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	ctx, cansel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cansel()
+	if err = db.PingContext(ctx); err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request) {

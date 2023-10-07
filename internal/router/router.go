@@ -10,8 +10,8 @@ import (
 	"practicumserver/internal/storage"
 )
 
-func Router(log *zap.Logger, prefix, fileStorage string) chi.Router {
-	hndlrs := handlers.NewHandlers(prefix, fileStorage)
+func Router(log *zap.Logger, prefix, fileStorage, dbAdress string) chi.Router {
+	hndlrs := handlers.NewHandlers(prefix, fileStorage, dbAdress)
 	storage.NewRead(fileStorage, hndlrs.Storage)
 
 	r := chi.NewRouter()
@@ -19,6 +19,9 @@ func Router(log *zap.Logger, prefix, fileStorage string) chi.Router {
 	r.Use(logger.MiddlewareLogHandleFunc(log), compress.MiddlewareGzipHandleFunc)
 	r.Get("/{id:[a-zA-Z0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		hndlrs.GetRequest(w, r)
+	})
+	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		hndlrs.GerRequestPing(w, r)
 	})
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		hndlrs.PostRequest(w, r)
