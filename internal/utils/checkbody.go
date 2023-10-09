@@ -2,26 +2,17 @@ package utils
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 )
 
-func IsRequestBodyEmpty(body io.Reader) bool {
-	fmt.Println(body)
-	bodyCopy, err := io.ReadAll(body)
+func IsRequestBodyEmpty(body io.Reader) (bool, error) {
+	newBody, err := io.ReadAll(body)
 	if err != nil {
-		return true
+		return false, err
 	}
-
-	// Создаем новый io.Reader на основе копии тела запроса
-	bodyReader := bytes.NewReader(bodyCopy)
-
-	// После создания копии и нового io.Reader, вы можете использовать bodyReader для проверки на пустоту
-	if _, err := bodyReader.ReadByte(); err == io.EOF {
-		return true
+	body = io.NopCloser(bytes.NewReader(newBody))
+	if newBody == nil {
+		return true, nil
 	}
-
-	// Теперь bodyCopy содержит копию исходного тела запроса, и bodyReader можно использовать далее
-	fmt.Println(bodyReader)
-	return false
+	return false, nil
 }

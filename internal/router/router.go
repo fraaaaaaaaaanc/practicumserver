@@ -11,7 +11,9 @@ import (
 )
 
 func Router(log *zap.Logger, prefix, fileStorage, dbAdress string) (chi.Router, error) {
-	hndlrs := handlers.NewHandlers(log, prefix, dbAdress, fileStorage)
+	strg := storage.NewStorage()
+
+	hndlrs := handlers.NewHandlers(strg, log, prefix, dbAdress, fileStorage)
 	err := storage.NewRead(fileStorage, hndlrs.Storage)
 	if err != nil {
 		return nil, err

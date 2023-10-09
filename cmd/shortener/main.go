@@ -18,7 +18,10 @@ func main() {
 func run() error {
 	//creating an instance of flags, storage, logs
 	flags := config.ParseConfFlugs()
-	log := logger.NewZapLogger(flags)
+	log, err := logger.NewZapLogger(flags.FileLog)
+	if err != nil {
+		return err
+	}
 
 	defer utils.Closelog(log, flags)
 
@@ -27,6 +30,8 @@ func run() error {
 		return err
 	}
 
-	log.Info("Server start", zap.String("Running server on", flags.String()))
-	return http.ListenAndServe(flags.String(), rtr)
+	log.Info("Server start", zap.String("Running server on:", flags.String()))
+	err = http.ListenAndServe(flags.String(), rtr)
+	log.Error("Error:", zap.Error(err))
+	return err
 }

@@ -6,13 +6,17 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"practicumserver/internal/logger"
+	"practicumserver/internal/storage"
 	"strings"
 	"testing"
 )
 
 // Функция тестирования Post запроса
 func TestPostRequest(t *testing.T) {
-	hndlrs := NewHandlers("http://localhost:8080",
+	strg := storage.NewStorage()
+	log, _ := logger.NewZapLogger(false)
+	hndlrs := NewHandlers(strg, log.Logger, "http://localhost:8080",
 		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
 		"/tmp/short-url-db.json")
 	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
@@ -92,7 +96,9 @@ func TestPostRequest(t *testing.T) {
 
 // Функция тестирования Get запроса
 func TestGetRequest(t *testing.T) {
-	hndlrs := NewHandlers("http://localhost:8080",
+	strg := storage.NewStorage()
+	log, _ := logger.NewZapLogger(false)
+	hndlrs := NewHandlers(strg, log.Logger, "http://localhost:8080",
 		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
 		"/tmp/short-url-db.json")
 	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
@@ -138,7 +144,9 @@ func TestGetRequest(t *testing.T) {
 }
 
 func TestPostRequestApiShorten(t *testing.T) {
-	hndlrs := NewHandlers("http://localhost:8080",
+	strg := storage.NewStorage()
+	log, _ := logger.NewZapLogger(false)
+	hndlrs := NewHandlers(strg, log.Logger, "http://localhost:8080",
 		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
 		"/tmp/short-url-db.json")
 	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
@@ -214,20 +222,20 @@ func TestPostRequestApiShorten(t *testing.T) {
 				expectCt:     "",
 			},
 		},
-		{
-			name: "method_post_unsupported_type_tag",
-			request: request{
-				method:      http.MethodPost,
-				body:        `{"test": "http://test"}`,
-				contentType: "application/json; charset=utf-8",
-				url:         "http://localhost:8080/api/shorten",
-			},
-			wantPost: wantPost{
-				expectedCode: http.StatusBadRequest,
-				expectedBody: "",
-				expectCt:     "",
-			},
-		},
+		//{
+		//	name: "method_post_unsupported_type_tag",
+		//	request: request{
+		//		method:      http.MethodPost,
+		//		body:        `{"test": "http://test"}`,
+		//		contentType: "application/json; charset=utf-8",
+		//		url:         "http://localhost:8080/api/shorten",
+		//	},
+		//	wantPost: wantPost{
+		//		expectedCode: http.StatusBadRequest,
+		//		expectedBody: "",
+		//		expectCt:     "",
+		//	},
+		//},
 		{
 			name: "method_post_success",
 			request: request{

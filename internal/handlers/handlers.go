@@ -15,19 +15,15 @@ import (
 	"time"
 )
 
-var encodigs []string = []string{"charset=utf-8", "charset=iso-8859-1", "charset=windows-1251", "charset=us-ascii"}
-
 type Handlers struct {
-	Storage     *storage.Storage
+	Storage     storage.StorageMock
 	Log         *zap.Logger
 	shortLink   string
 	fileStorage string
 	dbAdress    string
 }
 
-func NewHandlers(log *zap.Logger, shortLink, dbAdress, fileStorage string) *Handlers {
-	strg := storage.NewStorage()
-
+func NewHandlers(strg storage.StorageMock, log *zap.Logger, shortLink, dbAdress, fileStorage string) *Handlers {
 	return &Handlers{
 		Storage:     strg,
 		Log:         log,
@@ -54,7 +50,7 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := url.Parse(string(link)); err != nil {
+	if _, err := url.Parse(string(link)); err != nil || string(link) == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:",
 			zap.String("reason", "The request body isn't a url"))

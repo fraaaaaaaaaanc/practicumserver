@@ -5,7 +5,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
-	"practicumserver/internal/config"
 )
 
 type Logger interface {
@@ -18,7 +17,7 @@ type ZapLogger struct {
 	File   *os.File
 }
 
-func NewZapLogger(flags *config.Flags) *ZapLogger {
+func NewZapLogger(FileLog bool) (*ZapLogger, error) {
 	var cores []zapcore.Core
 	var file *os.File
 
@@ -28,10 +27,10 @@ func NewZapLogger(flags *config.Flags) *ZapLogger {
 		zapcore.Lock(os.Stdout),
 		zapcore.InfoLevel))
 
-	if flags.FileLog {
+	if FileLog {
 		file, err := os.OpenFile("filelogger.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		writeSyncer := zapcore.AddSync(file)
@@ -46,7 +45,7 @@ func NewZapLogger(flags *config.Flags) *ZapLogger {
 
 	core := zapcore.NewTee(cores...)
 	logger := zap.New(core, zap.AddCaller())
-	return &ZapLogger{Logger: logger, File: file}
+	return &ZapLogger{Logger: logger, File: file}, nil
 }
 
 func (z *ZapLogger) Info(msg string, fields ...zapcore.Field) {

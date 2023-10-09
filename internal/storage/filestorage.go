@@ -14,7 +14,7 @@ type shortenURLData struct {
 	OriginalURL string `json:"original_url"`
 }
 
-func NewRead(filename string, strg *Storage) error {
+func NewRead(filename string, strg StorageMock) error {
 	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err
