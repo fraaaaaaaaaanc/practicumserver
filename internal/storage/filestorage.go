@@ -14,10 +14,10 @@ type shortenURLData struct {
 	OriginalURL string `json:"original_url"`
 }
 
-func NewRead(filename string, strg *Storage) {
+func NewRead(filename string, strg *Storage) error {
 	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
@@ -28,9 +28,10 @@ func NewRead(filename string, strg *Storage) {
 		if err := json.NewDecoder(strings.NewReader(line)).Decode(&myData); err == nil {
 			strg.SetData(myData.OriginalURL, myData.OriginalURL)
 		} else {
-			log.Fatal(err)
+			return err
 		}
 	}
+	return nil
 }
 
 func NewWrite(filename, link, shortlink string) {

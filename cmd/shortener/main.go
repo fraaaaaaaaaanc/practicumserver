@@ -22,7 +22,11 @@ func run() error {
 
 	defer utils.Closelog(log, flags)
 
+	rtr, err := router.Router(log.Logger, flags.Prefix, flags.FileStorage, flags.DBAdress)
+	if err != nil {
+		return err
+	}
+
 	log.Info("Server start", zap.String("Running server on", flags.String()))
-	return http.ListenAndServe(flags.String(), router.Router(log.Logger,
-		flags.Prefix, flags.FileStorage, flags.DBAdress))
+	return http.ListenAndServe(flags.String(), rtr)
 }

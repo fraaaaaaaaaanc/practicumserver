@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
+	"net/url"
 	"practicumserver/internal/models"
 	"practicumserver/internal/storage"
 	"practicumserver/internal/utils"
@@ -18,16 +19,18 @@ var encodigs []string = []string{"charset=utf-8", "charset=iso-8859-1", "charset
 
 type Handlers struct {
 	Storage     *storage.Storage
+	Log         *zap.Logger
 	shortLink   string
 	fileStorage string
 	dbAdress    string
 }
 
-func NewHandlers(shortLink, dbAdress, fileStorage string) *Handlers {
+func NewHandlers(log *zap.Logger, shortLink, dbAdress, fileStorage string) *Handlers {
 	strg := storage.NewStorage()
 
 	return &Handlers{
 		Storage:     strg,
+		Log:         log,
 		shortLink:   shortLink,
 		fileStorage: fileStorage,
 		dbAdress:    dbAdress,
@@ -40,14 +43,30 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 	if (!utils.ValidContentType(contentType, "text/plain") && contentType != "application/x-gzip") ||
 		r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:",
+			zap.String("reason", "Invalid URL or Content-Type"))
 		return
 	}
 	link, err := io.ReadAll(r.Body)
-	if err != nil || string(link) == "" {
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:", zap.Error(err))
 		return
 	}
-	defer r.Body.Close()
+
+	if _, err := url.Parse(string(link)); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:",
+			zap.String("reason", "The request body isn't a url"))
+		return
+	}
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			//w.WriteHeader(http.StatusInternalServerError)
+			//h.Log.Error("Error:", zap.Error(err))
+			return
+		}
+	}()
 
 	newShortLink := h.Storage.GetNewShortLink(string(link), h.fileStorage)
 	h.Storage.SetData(string(link), newShortLink)
@@ -61,8 +80,10 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request) {
 	shortLink := r.URL.String()[1:]
 	baseLink, boolRes := h.Storage.GetData(shortLink)
-	if shortLink == "" || boolRes {
+	if boolRes {
 		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error: This abbreviated link wasn't found",
+			zap.String("shortLink", shortLink))
 		return
 	}
 	w.Header().Set("Location", baseLink)
@@ -73,13 +94,14 @@ func (h *Handlers) GerRequestPing(w http.ResponseWriter, r *http.Request) {
 	db, err := sql.Open("pgx", h.dbAdress)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:", zap.Error(err))
 		return
 	}
 	ctx, cansel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cansel()
 	if err = db.PingContext(ctx); err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:", zap.Error(err))
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -90,6 +112,8 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 	if (!utils.ValidContentType(contentType, "application/json") && contentType != "application/x-gzip") ||
 		r.URL.String() != "/api/shorten" {
 		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:",
+			zap.String("reason", "Invalid URL or Content-Type"))
 		return
 	}
 
@@ -97,11 +121,14 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&req); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		h.Log.Error("Error:", zap.Error(err))
 		return
 	}
 
-	if req.LongURL == "" {
+	if _, err := url.Parse(req.LongURL); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:",
+			zap.String("reason", "The request body isn't a url"))
 		return
 	}
 
@@ -118,6 +145,7 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 	enc.SetEscapeHTML(false)
 	if err := enc.Encode(resp); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:", zap.Error(err))
 		return
 	}
 }

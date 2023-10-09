@@ -49,10 +49,14 @@ func NewZapLogger(flags *config.Flags) *ZapLogger {
 	return &ZapLogger{Logger: logger, File: file}
 }
 
-func (z *ZapLogger) Info(msg string, fileds ...zapcore.Field) {
-	z.Logger.Info(msg, fileds...)
+func (z *ZapLogger) Info(msg string, fields ...zapcore.Field) {
+	z.Logger.Info(msg, fields...)
 }
 
-func (z *ZapLogger) Error(msg string, fileds ...zapcore.Field) {
-	z.Logger.Error(msg, fileds...)
+func (z *ZapLogger) Error(msg string, fields ...zapcore.Field) {
+	//_, file, line, ok := runtime.Caller(1)
+	//if ok {
+	//	fields = append(fields, zap.String("file", file), zap.Int("line", line))
+	//}
+	z.Logger.Error(msg, fields...)
 }

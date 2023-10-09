@@ -2,7 +2,7 @@ package compress
 
 import (
 	"compress/gzip"
-	"fmt"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 )
@@ -68,50 +68,110 @@ func (c *compressReader) Close() error {
 	return c.rz.Close()
 }
 
-func MiddlewareGzipHandleFunc(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var cw *compressWriter
-		var cr *compressReader
-		ow := w
+func MiddlewareGzipHandleFunc(logger *zap.Logger) func(h http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var cw *compressWriter
+			var cr *compressReader
+			ow := w
 
-		zipFormAccept := r.Header.Values("Accept-Encoding")
-		for _, elem := range zipFormAccept {
-			if elem == "gzip" {
-				cw = newCompressWriter(w)
-				ow = cw
-			}
-		}
-		defer func() {
-			if cw != nil {
-				err := cw.Close()
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					return
+			zipFormAccept := r.Header.Values("Accept-Encoding")
+			for _, elem := range zipFormAccept {
+				if elem == "gzip" {
+					cw = newCompressWriter(w)
+					ow = cw
 				}
 			}
-		}()
+			defer func() {
+				if cw != nil {
+					err := cw.Close()
+					if err != nil {
+						w.WriteHeader(http.StatusInternalServerError)
+						fields := []zap.Field{
+							zap.Error(err),
+						}
+						logger.Error("Error:", fields...)
+						return
+					}
+				}
+			}()
 
-		zipFormContent := r.Header.Values("Content-Encoding")
-		for _, elem := range zipFormContent {
-			if elem == "gzip" {
-				cr, err := newCompressReader(r.Body)
-				if err != nil {
-					fmt.Println(err)
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-				r.Body = cr
-			}
-		}
-		defer func() {
-			if cr != nil {
-				err := cr.Close()
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					return
+			zipFormContent := r.Header.Values("Content-Encoding")
+			for _, elem := range zipFormContent {
+				if elem == "gzip" {
+					cr, err := newCompressReader(r.Body)
+					if err != nil {
+						w.WriteHeader(http.StatusInternalServerError)
+						fields := []zap.Field{
+							zap.Error(err),
+						}
+						logger.Error("Error:", fields...)
+						return
+					}
+					r.Body = cr
 				}
 			}
-		}()
-		h.ServeHTTP(ow, r)
-	})
+			defer func() {
+				if cr != nil {
+					err := cr.Close()
+					if err != nil {
+						w.WriteHeader(http.StatusInternalServerError)
+						fields := []zap.Field{
+							zap.Error(err),
+						}
+						logger.Error("Error:", fields...)
+						return
+					}
+				}
+			}()
+			h.ServeHTTP(ow, r)
+		})
+	}
 }
+
+//func MiddlewareGzipHandleFunc(h http.Handler) http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		var cw *compressWriter
+//		var cr *compressReader
+//		ow := w
+//
+//		zipFormAccept := r.Header.Values("Accept-Encoding")
+//		for _, elem := range zipFormAccept {
+//			if elem == "gzip" {
+//				cw = newCompressWriter(w)
+//				ow = cw
+//			}
+//		}
+//		defer func() {
+//			if cw != nil {
+//				err := cw.Close()
+//				if err != nil {
+//					w.WriteHeader(http.StatusInternalServerError)
+//					return
+//				}
+//			}
+//		}()
+//
+//		zipFormContent := r.Header.Values("Content-Encoding")
+//		for _, elem := range zipFormContent {
+//			if elem == "gzip" {
+//				cr, err := newCompressReader(r.Body)
+//				if err != nil {
+//					w.WriteHeader(http.StatusInternalServerError)
+//					return
+//				}
+//				r.Body = cr
+//			}
+//		}
+//		defer func() {
+//			if cr != nil {
+//				err := cr.Close()
+//				if err != nil {
+//					w.WriteHeader(http.StatusInternalServerError)
+//					return
+//				}
+//			}
+//		}()
+//		h.ServeHTTP(ow, r)
+//	})
+//}
