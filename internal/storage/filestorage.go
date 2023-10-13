@@ -15,8 +15,6 @@ type shortenURLData struct {
 }
 
 func (fs *FileStorage) NewRead() error {
-	fs.sm.Lock()
-	defer fs.sm.Unlock()
 	file, err := os.OpenFile(fs.FileName, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err
