@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"context"
-	"database/sql"
 	"encoding/json"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
@@ -12,24 +10,19 @@ import (
 	"practicumserver/internal/models"
 	"practicumserver/internal/storage"
 	"practicumserver/internal/utils"
-	"time"
 )
 
 type Handlers struct {
-	Storage     storage.StorageMock
-	Log         *zap.Logger
-	shortLink   string
-	fileStorage string
-	dbAdress    string
+	Storage storage.StorageMock
+	Log     *zap.Logger
+	prefix  string
 }
 
-func NewHandlers(strg storage.StorageMock, log *zap.Logger, shortLink, dbAdress, fileStorage string) *Handlers {
+func NewHandlers(strg storage.StorageMock, log *zap.Logger, prefix string) *Handlers {
 	return &Handlers{
-		Storage:     strg,
-		Log:         log,
-		shortLink:   shortLink,
-		fileStorage: fileStorage,
-		dbAdress:    dbAdress,
+		Storage: strg,
+		Log:     log,
+		prefix:  prefix,
 	}
 }
 
@@ -64,19 +57,31 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	newShortLink := h.Storage.GetNewShortLink(string(link), h.fileStorage)
-	h.Storage.SetData(string(link), newShortLink)
+	newShortLink, err := h.Storage.GetNewShortLink(r.Context(), string(link))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:", zap.Error(err))
+	}
+	err = h.Storage.SetData(r.Context(), string(link), newShortLink)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:", zap.Error(err))
+	}
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	_, _ = w.Write([]byte(h.shortLink + "/" + newShortLink))
+	_, _ = w.Write([]byte(h.prefix + "/" + newShortLink))
 }
 
 // Обработчик Get запроса
 func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request) {
 	shortLink := r.URL.String()[1:]
-	baseLink, boolRes := h.Storage.GetData(shortLink)
-	if boolRes {
+	baseLink, err := h.Storage.GetData(r.Context(), shortLink)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:", zap.Error(err))
+	}
+	if baseLink == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error: This abbreviated link wasn't found",
 			zap.String("shortLink", shortLink))
@@ -87,20 +92,15 @@ func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GerRequestPing(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("pgx", h.dbAdress)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		h.Log.Error("Error:", zap.Error(err))
-		return
+	if ds, ok := h.Storage.(*storage.DBStorage); ok {
+		if err := ds.PingDB(r.Context()); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			h.Log.Error("Error:", zap.Error(err))
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	}
-	ctx, cansel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cansel()
-	if err = db.PingContext(ctx); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		h.Log.Error("Error:", zap.Error(err))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusBadRequest)
 }
 
 func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request) {
@@ -128,11 +128,19 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	newShortLink := h.Storage.GetNewShortLink(req.LongURL, h.fileStorage)
-	h.Storage.SetData(req.LongURL, newShortLink)
+	newShortLink, err := h.Storage.GetNewShortLink(r.Context(), req.LongURL)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:", zap.Error(err))
+	}
+	err = h.Storage.SetData(r.Context(), req.LongURL, newShortLink)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error:", zap.Error(err))
+	}
 
 	resp := models.Response{
-		ShortURL: h.shortLink + "/" + newShortLink,
+		ShortURL: h.prefix + "/" + newShortLink,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

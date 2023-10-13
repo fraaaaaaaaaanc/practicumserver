@@ -24,10 +24,10 @@ func ParseEnv(flags *Flags) {
 		flags.LogLevel = LogLvlEnv
 	}
 	if fileStorageFileEnv := os.Getenv("FILE_STORAGE_PATH"); fileStorageFileEnv != "" {
-		flags.FileStorage = fileStorageFileEnv
+		flags.FileStoragePath = fileStorageFileEnv
 	}
 	if dbAdressEnv := os.Getenv("DATABASE_DSN"); dbAdressEnv != "" {
-		flags.DBAdress = dbAdressEnv
+		flags.DBStorageAdress = dbAdressEnv
 	}
 }
 
@@ -38,8 +38,8 @@ func ParseFlags() *Flags {
 	flag.StringVar(&flags.Prefix, "b", flags.Prefix, "address and port to run server")
 	flag.StringVar(&flags.LogLevel, "l", flags.LogLevel, "log level")
 	flag.BoolVar(&flags.FileLog, "fl", flags.FileLog, "On file logging")
-	flag.StringVar(&flags.FileStorage, "f", flags.FileStorage, "On file storage")
-	flag.StringVar(&flags.DBAdress, "d", flags.DBAdress, "On file storage")
+	flag.StringVar(&flags.FileStoragePath, "f", flags.FileStoragePath, "On file storage")
+	flag.StringVar(&flags.DBStorageAdress, "d", flags.DBStorageAdress, "On db params: host, user, password, dbname")
 
 	flag.Parse()
 
