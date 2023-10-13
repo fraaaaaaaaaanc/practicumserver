@@ -10,14 +10,23 @@ type Hp struct {
 	Host string
 	Port int
 }
+
+type FileStorageFlags struct {
+	FilePath string
+}
+
+type DBStorageFlags struct {
+	DBAdress string
+}
+
 type Flags struct {
+	Prefix          string
+	LogLevel        string
+	FileLog         bool
+	ConsoleLog      bool
+	FileStoragePath string
+	DBStorageAdress string
 	Hp
-	Prefix      string
-	LogLevel    string
-	FileLog     bool
-	ConsoleLog  bool
-	FileStorage string
-	DBAdress    string
 }
 
 func newFlags() Flags {
@@ -27,11 +36,10 @@ func newFlags() Flags {
 			Host: "localhost",
 			Port: 8080,
 		},
-		LogLevel: "info",
-		FileLog:  false,
-		//FileStorage: "C:/Users/frant/go/go1.21.0/bin/pkg/mod/github.com/fraaaaaaaaaanc/practicumserver/internal/tmp/short-url-db.json",
-		FileStorage: "/tmp/short-url-db.json",
-		DBAdress:    "host=localhost user=postgres password=1234 dbname=video sslmode=disable",
+		LogLevel:        "info",
+		FileLog:         false,
+		FileStoragePath: "",
+		DBStorageAdress: "",
 	}
 }
 

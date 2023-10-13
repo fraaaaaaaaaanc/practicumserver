@@ -23,12 +23,9 @@ func (h HandlerFuncAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestMiddlewareGzipHandleFunc(t *testing.T) {
-	strg := storage.NewStorage()
 	log, _ := logger.NewZapLogger(false)
-	hndlrs := handlers.NewHandlers(strg, log.Logger, "http://localhost:8080",
-		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
-		"/tmp/short-url-db.json")
-	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
+	strg, _ := storage.NewStorage(log.Logger, "", "")
+	hndlrs := handlers.NewHandlers(strg, log.Logger, "http://localhost:8080")
 
 	adapter := HandlerFuncAdapter(hndlrs.PostRequestAPIShorten)
 	newHandler := MiddlewareGzipHandleFunc(log.Logger)

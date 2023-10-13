@@ -3,7 +3,6 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -14,8 +13,8 @@ type shortenURLData struct {
 	OriginalURL string `json:"original_url"`
 }
 
-func NewRead(filename string, strg StorageMock) error {
-	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)
+func (fs *FileStorage) NewRead() error {
+	file, err := os.OpenFile(fs.FileName, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
@@ -26,7 +25,7 @@ func NewRead(filename string, strg StorageMock) error {
 
 		var myData shortenURLData
 		if err := json.NewDecoder(strings.NewReader(line)).Decode(&myData); err == nil {
-			strg.SetData(myData.OriginalURL, myData.OriginalURL)
+			fs.MemoryStorage.SetData(myData.OriginalURL, myData.ShortURL)
 		} else {
 			return err
 		}
@@ -34,18 +33,26 @@ func NewRead(filename string, strg StorageMock) error {
 	return nil
 }
 
-func NewWrite(filename, link, shortlink string) {
-	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND, 0666)
+func (fs *FileStorage) NewWrite(originalURL, ShortURL string) {
+	file, err := os.OpenFile(fs.FileName, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
-		fmt.Println("((((((")
 		log.Fatal(err)
 	}
+	defer file.Close()
 	myData := shortenURLData{
-		ShortURL:    shortlink,
-		OriginalURL: link,
+		ShortURL:    ShortURL,
+		OriginalURL: originalURL,
 	}
 
 	if err := json.NewEncoder(file).Encode(myData); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (fs *FileStorage) SetData(originalURL, shortLink string) error {
+	if _, ok := fs.LinkBoolUrls[originalURL]; !ok {
+		fs.MemoryStorage.SetData(originalURL, shortLink)
+		fs.NewWrite(originalURL, shortLink)
+	}
+	return nil
 }

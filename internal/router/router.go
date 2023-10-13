@@ -10,14 +10,13 @@ import (
 	"practicumserver/internal/storage"
 )
 
-func Router(log *zap.Logger, prefix, fileStorage, dbAdress string) (chi.Router, error) {
-	strg := storage.NewStorage()
-
-	hndlrs := handlers.NewHandlers(strg, log, prefix, dbAdress, fileStorage)
-	err := storage.NewRead(fileStorage, hndlrs.Storage)
+func Router(log *zap.Logger, prefix string,
+	dbStorageAdress, fileStoragePath string) (chi.Router, error) {
+	strg, err := storage.NewStorage(log, dbStorageAdress, fileStoragePath)
 	if err != nil {
 		return nil, err
 	}
+	hndlrs := handlers.NewHandlers(strg, log, prefix)
 
 	r := chi.NewRouter()
 
