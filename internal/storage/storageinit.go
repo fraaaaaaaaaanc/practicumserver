@@ -14,8 +14,7 @@ type StorageParam struct {
 }
 
 type DBStorage struct {
-	db  *sql.DB
-	ctx context.Context
+	db *sql.DB
 	StorageParam
 }
 
@@ -91,7 +90,6 @@ func NewStorage(log *zap.Logger,
 		return &DBStorage{
 			db:           db,
 			StorageParam: strg,
-			ctx:          ctx,
 		}, nil
 	}
 	memoryStorage := &MemoryStorage{
