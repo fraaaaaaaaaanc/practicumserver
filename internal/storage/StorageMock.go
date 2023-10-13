@@ -1,8 +1,10 @@
 package storage
 
+import "context"
+
 type StorageMock interface {
-	CheckShortLink() (string, error)
-	GetNewShortLink(link string) (string, error)
-	SetData(link, shortLink string) error
-	GetData(shortLink string) (string, error)
+	CheckShortLink(ctx context.Context) (string, error)
+	GetNewShortLink(ctx context.Context, link string) (string, error)
+	SetData(ctx context.Context, link, shortLink string) error
+	GetData(ctx context.Context, shortLink string) (string, error)
 }

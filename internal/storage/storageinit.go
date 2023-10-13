@@ -10,7 +10,7 @@ import (
 
 type StorageParam struct {
 	log *zap.Logger
-	sm  *sync.Mutex
+	sm  sync.Mutex
 }
 
 type DBStorage struct {
@@ -37,7 +37,7 @@ func NewStorage(log *zap.Logger,
 	var sm sync.Mutex
 	strg := StorageParam{
 		log: log,
-		sm:  &sm,
+		sm:  sm,
 	}
 	if DBStorageAdress != "" {
 		db, err := sql.Open("pgx",

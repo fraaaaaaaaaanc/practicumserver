@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"log"
 	"os"
@@ -27,7 +28,7 @@ func (fs *FileStorage) NewRead() error {
 
 		var myData shortenURLData
 		if err := json.NewDecoder(strings.NewReader(line)).Decode(&myData); err == nil {
-			fs.MemoryStorage.SetData(myData.OriginalURL, myData.ShortURL)
+			fs.MemoryStorage.SetData(context.Background(), myData.OriginalURL, myData.ShortURL)
 		} else {
 			return err
 		}
@@ -53,12 +54,15 @@ func (fs *FileStorage) NewWrite(originalURL, ShortURL string) {
 	}
 }
 
-func (fs *FileStorage) SetData(originalURL, shortLink string) error {
-	fs.sm.Lock()
-	defer fs.sm.Unlock()
-	if _, ok := fs.LinkBoolUrls[originalURL]; !ok {
-		fs.MemoryStorage.SetData(originalURL, shortLink)
-		fs.NewWrite(originalURL, shortLink)
+func (fs *FileStorage) SetData(ctx context.Context, originalURL, shortLink string) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		if _, ok := fs.LinkBoolUrls[originalURL]; !ok {
+			fs.MemoryStorage.SetData(ctx, originalURL, shortLink)
+			fs.NewWrite(originalURL, shortLink)
+		}
+		return nil
 	}
-	return nil
 }

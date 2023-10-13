@@ -57,12 +57,12 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	newShortLink, err := h.Storage.GetNewShortLink(string(link))
+	newShortLink, err := h.Storage.GetNewShortLink(r.Context(), string(link))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
 	}
-	err = h.Storage.SetData(string(link), newShortLink)
+	err = h.Storage.SetData(r.Context(), string(link), newShortLink)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
@@ -76,7 +76,7 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 // Обработчик Get запроса
 func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request) {
 	shortLink := r.URL.String()[1:]
-	baseLink, err := h.Storage.GetData(shortLink)
+	baseLink, err := h.Storage.GetData(r.Context(), shortLink)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
@@ -93,7 +93,7 @@ func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GerRequestPing(w http.ResponseWriter, r *http.Request) {
 	if ds, ok := h.Storage.(*storage.DBStorage); ok {
-		if err := ds.PingDB(); err != nil {
+		if err := ds.PingDB(r.Context()); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			h.Log.Error("Error:", zap.Error(err))
 			return
@@ -128,12 +128,12 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	newShortLink, err := h.Storage.GetNewShortLink(req.LongURL)
+	newShortLink, err := h.Storage.GetNewShortLink(r.Context(), req.LongURL)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
 	}
-	err = h.Storage.SetData(req.LongURL, newShortLink)
+	err = h.Storage.SetData(r.Context(), req.LongURL, newShortLink)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
