@@ -34,10 +34,10 @@ type MemoryStorage struct {
 
 func NewStorage(log *zap.Logger,
 	DBStorageAdress, FileStoragePath string) (StorageMock, error) {
-	var sm *sync.Mutex
+	var sm sync.Mutex
 	strg := StorageParam{
 		log: log,
-		sm:  sm,
+		sm:  &sm,
 	}
 	if DBStorageAdress != "" {
 		db, err := sql.Open("pgx",
