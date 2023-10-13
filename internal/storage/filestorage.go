@@ -14,6 +14,8 @@ type shortenURLData struct {
 }
 
 func (fs *FileStorage) NewRead() error {
+	fs.sm.Lock()
+	defer fs.sm.Unlock()
 	file, err := os.OpenFile(fs.FileName, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err
@@ -34,6 +36,8 @@ func (fs *FileStorage) NewRead() error {
 }
 
 func (fs *FileStorage) NewWrite(originalURL, ShortURL string) {
+	fs.sm.Lock()
+	defer fs.sm.Unlock()
 	file, err := os.OpenFile(fs.FileName, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal(err)
@@ -50,6 +54,8 @@ func (fs *FileStorage) NewWrite(originalURL, ShortURL string) {
 }
 
 func (fs *FileStorage) SetData(originalURL, shortLink string) error {
+	fs.sm.Lock()
+	defer fs.sm.Unlock()
 	if _, ok := fs.LinkBoolUrls[originalURL]; !ok {
 		fs.MemoryStorage.SetData(originalURL, shortLink)
 		fs.NewWrite(originalURL, shortLink)

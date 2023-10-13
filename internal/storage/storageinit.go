@@ -10,7 +10,7 @@ import (
 
 type StorageParam struct {
 	log *zap.Logger
-	sm  sync.Mutex
+	sm  *sync.Mutex
 }
 
 type DBStorage struct {
@@ -34,7 +34,7 @@ type MemoryStorage struct {
 
 func NewStorage(log *zap.Logger,
 	DBStorageAdress, FileStoragePath string) (StorageMock, error) {
-	var sm sync.Mutex
+	var sm *sync.Mutex
 	strg := StorageParam{
 		log: log,
 		sm:  sm,
@@ -47,8 +47,8 @@ func NewStorage(log *zap.Logger,
 			return nil, err
 		}
 
-		ctx, _ := context.WithCancel(context.Background())
-		//defer cansel()
+		ctx, cansel := context.WithCancel(context.Background())
+		defer cansel()
 
 		if err = db.PingContext(ctx); err != nil {
 			log.Error("Error:", zap.Error(err))
@@ -107,8 +107,7 @@ func NewStorage(log *zap.Logger,
 		},
 	}
 	if FileStoragePath != "" {
-		var fs *FileStorage
-		fs = &FileStorage{
+		fs := &FileStorage{
 			MemoryStorage: memoryStorage,
 			FileName:      FileStoragePath,
 		}

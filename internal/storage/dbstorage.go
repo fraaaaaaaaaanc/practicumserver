@@ -2,7 +2,6 @@ package storage
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/jackc/pgx/v5/pgconn"
 	"practicumserver/internal/utils"
 )
@@ -32,6 +31,9 @@ func (ds *DBStorage) CheckShortLink() (string, error) {
 }
 
 func (ds *DBStorage) GetNewShortLink(link string) (string, error) {
+	ds.sm.Lock()
+	defer ds.sm.Unlock()
+
 	var shortlink string
 	row := ds.db.QueryRowContext(ds.ctx,
 		"SELECT ShortLink FROM links WHERE Link = $1",
@@ -51,6 +53,9 @@ func (ds *DBStorage) GetNewShortLink(link string) (string, error) {
 }
 
 func (ds *DBStorage) GetData(shortLink string) (string, error) {
+	ds.sm.Lock()
+	defer ds.sm.Unlock()
+
 	var originLink string
 	row := ds.db.QueryRowContext(ds.ctx,
 		"SELECT Link FROM links WHERE ShortLink= $1",
@@ -65,7 +70,8 @@ func (ds *DBStorage) GetData(shortLink string) (string, error) {
 }
 
 func (ds *DBStorage) SetData(link, shortLink string) error {
-	fmt.Println(link, shortLink)
+	ds.sm.Lock()
+	defer ds.sm.Unlock()
 	//var boolOriginLink bool
 	//row, err := ds.db.QueryContext(ds.ctx,
 	//	"SELECT EXISTS (SELECT Link FROM links WHERE Link= $1)",
