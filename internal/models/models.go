@@ -1,22 +1,22 @@
 package models
 
 type (
-	RequestApiShorten struct {
+	RequestAPIShorten struct {
 		LongURL string `json:"url"`
 	}
 
-	ResponseApiShorten struct {
+	ResponseAPIShorten struct {
 		ShortURL string `json:"result"`
 	}
 )
 
 type (
-	RequestApiBatch struct {
+	RequestAPIBatch struct {
 		CorrelationID string `json:"correlation_id"`
-		OriginalUrl   string `json:"original_url"`
+		OriginalURL   string `json:"original_url"`
 	}
 
-	ResponseApiBatch struct {
+	ResponseAPIBatch struct {
 		CorrelationID string `json:"correlation_id"`
 		ShortURL      string `json:"short_url"`
 	}

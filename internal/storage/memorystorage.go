@@ -6,7 +6,7 @@ import (
 	"practicumserver/internal/utils"
 )
 
-func (ms *MemoryStorage) checkShortLink() string {
+func (ms *MemoryStorage) getNewShortLink() string {
 	shortLink := utils.LinkShortening()
 	for ms.ShortBoolUrls[shortLink] {
 		shortLink = utils.LinkShortening()
@@ -14,7 +14,7 @@ func (ms *MemoryStorage) checkShortLink() string {
 	return shortLink
 }
 
-func (ms *MemoryStorage) getNewShortLink(link string) string {
+func (ms *MemoryStorage) checkShortLink(link string) string {
 	if _, ok := ms.LinkBoolUrls[link]; ok {
 		for shortLink, longLink := range ms.ShortUrls {
 			if longLink == link {
@@ -22,7 +22,7 @@ func (ms *MemoryStorage) getNewShortLink(link string) string {
 			}
 		}
 	}
-	return ms.checkShortLink()
+	return ms.getNewShortLink()
 }
 
 func (ms *MemoryStorage) GetData(ctx context.Context, shortLink string) (string, error) {
@@ -47,7 +47,7 @@ func (ms *MemoryStorage) SetData(ctx context.Context, originalURL string) (strin
 	case <-ctx.Done():
 		return "", ctx.Err()
 	default:
-		shortLink := ms.getNewShortLink(originalURL)
+		shortLink := ms.checkShortLink(originalURL)
 		if _, ok := ms.LinkBoolUrls[originalURL]; !ok {
 			ms.ShortUrls[shortLink] = originalURL
 			ms.ShortBoolUrls[shortLink] = true
@@ -58,14 +58,14 @@ func (ms *MemoryStorage) SetData(ctx context.Context, originalURL string) (strin
 }
 
 func (ms *MemoryStorage) SetListData(ctx context.Context,
-	reqList []models.RequestApiBatch) ([]models.ResponseApiBatch, error) {
+	reqList []models.RequestAPIBatch) ([]models.ResponseAPIBatch, error) {
 	//ms.sm.Lock()
 	//defer ms.sm.Unlock()
 
-	respList := make([]models.ResponseApiBatch, 0)
+	respList := make([]models.ResponseAPIBatch, 0)
 
 	for _, structOriginalURL := range reqList {
-		shortLink, err := ms.SetData(ctx, structOriginalURL.OriginalUrl)
+		shortLink, err := ms.SetData(ctx, structOriginalURL.OriginalURL)
 		if err != nil {
 			return nil, err
 		}
@@ -73,7 +73,7 @@ func (ms *MemoryStorage) SetListData(ctx context.Context,
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
-			resp := models.ResponseApiBatch{
+			resp := models.ResponseAPIBatch{
 				CorrelationID: structOriginalURL.CorrelationID,
 				ShortURL:      shortLink,
 			}

@@ -8,5 +8,5 @@ import (
 type StorageMock interface {
 	SetData(ctx context.Context, link string) (string, error)
 	GetData(ctx context.Context, shortLink string) (string, error)
-	SetListData(ctx context.Context, reqList []models.RequestApiBatch) ([]models.ResponseApiBatch, error)
+	SetListData(ctx context.Context, reqList []models.RequestAPIBatch) ([]models.ResponseAPIBatch, error)
 }

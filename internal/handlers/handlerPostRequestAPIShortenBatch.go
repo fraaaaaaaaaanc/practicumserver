@@ -15,7 +15,7 @@ func (h *Handlers) PostRequestAPIShortenBatch(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	var req []models.RequestApiBatch
+	var req []models.RequestAPIBatch
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&req); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

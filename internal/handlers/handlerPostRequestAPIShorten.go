@@ -19,7 +19,7 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var req models.RequestApiShorten
+	var req models.RequestAPIShorten
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&req); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -41,7 +41,7 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	resp := models.ResponseApiShorten{
+	resp := models.ResponseAPIShorten{
 		ShortURL: h.prefix + "/" + newShortLink,
 	}
 	w.Header().Set("Content-Type", "application/json")

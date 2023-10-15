@@ -107,7 +107,7 @@ func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, e
 	}
 }
 
-func (ds *DBStorage) SetListData(ctx context.Context, reqList []models.RequestApiBatch) ([]models.ResponseApiBatch, error) {
+func (ds *DBStorage) SetListData(ctx context.Context, reqList []models.RequestAPIBatch) ([]models.ResponseAPIBatch, error) {
 	ds.sm.Lock()
 	defer ds.sm.Unlock()
 
@@ -118,10 +118,10 @@ func (ds *DBStorage) SetListData(ctx context.Context, reqList []models.RequestAp
 
 	ctx, cansel := context.WithTimeout(ctx, 5*time.Second)
 	defer cansel()
-	respList := make([]models.ResponseApiBatch, 0)
+	respList := make([]models.ResponseAPIBatch, 0)
 
 	for _, StructOriginalURL := range reqList {
-		shortLink, err := ds.getNewShortLink(ctx, StructOriginalURL.OriginalUrl)
+		shortLink, err := ds.getNewShortLink(ctx, StructOriginalURL.OriginalURL)
 		if err != nil {
 			tx.Rollback()
 			return nil, err
@@ -134,7 +134,7 @@ func (ds *DBStorage) SetListData(ctx context.Context, reqList []models.RequestAp
 			_, err = tx.ExecContext(ctx,
 				"INSERT INTO links (Link, ShortLink) "+
 					"VALUES ($1, $2)",
-				StructOriginalURL.OriginalUrl, shortLink)
+				StructOriginalURL.OriginalURL, shortLink)
 			if err != nil {
 				if pqErr, ok := err.(*pgconn.PgError); ok {
 					if pqErr.Code != "23505" {
@@ -143,7 +143,7 @@ func (ds *DBStorage) SetListData(ctx context.Context, reqList []models.RequestAp
 					}
 				}
 			}
-			resp := models.ResponseApiBatch{
+			resp := models.ResponseAPIBatch{
 				CorrelationID: StructOriginalURL.CorrelationID,
 				ShortURL:      shortLink,
 			}

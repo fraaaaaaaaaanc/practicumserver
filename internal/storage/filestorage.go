@@ -58,36 +58,66 @@ func (fs *FileStorage) SetFromFileData(originalURL, shortLink string) {
 }
 
 func (fs *FileStorage) SetData(ctx context.Context, originalURL string) (string, error) {
-	shortLink, err := fs.MemoryStorage.SetData(ctx, originalURL)
-	if err != nil {
-		return "", err
-	}
-	select {
-	case <-ctx.Done():
-		return "", ctx.Err()
-	default:
-		if _, ok := fs.LinkBoolUrls[originalURL]; !ok {
-			fs.NewWrite(originalURL, shortLink)
+	if _, ok := fs.LinkBoolUrls[originalURL]; !ok {
+		shortLink, err := fs.MemoryStorage.SetData(ctx, originalURL)
+		if err != nil {
+			return "", err
 		}
-		return shortLink, nil
+		select {
+		case <-ctx.Done():
+			return "", ctx.Err()
+		default:
+			fs.NewWrite(originalURL, shortLink)
+			return shortLink, nil
+		}
 	}
+	return fs.checkShortLink(originalURL), nil
 }
 
 func (fs *FileStorage) SetListData(ctx context.Context,
-	reqList []models.RequestApiBatch) ([]models.ResponseApiBatch, error) {
-	respList, err := fs.MemoryStorage.SetListData(ctx, reqList)
-	if err != nil {
-		return nil, err
-	}
-	select {
-	case <-ctx.Done():
-		return nil, err
-	default:
-		for idx, structOriginalUrl := range reqList {
-			if _, ok := fs.LinkBoolUrls[structOriginalUrl.OriginalUrl]; !ok {
-				fs.NewWrite(structOriginalUrl.OriginalUrl, respList[idx].ShortURL)
+	reqList []models.RequestAPIBatch) ([]models.ResponseAPIBatch, error) {
+
+	respList := make([]models.ResponseAPIBatch, 0)
+
+	for _, structOriginalURL := range reqList {
+		if _, ok := fs.LinkBoolUrls[structOriginalURL.OriginalURL]; !ok {
+			shortLink, err := fs.MemoryStorage.SetData(ctx, structOriginalURL.OriginalURL)
+			if err != nil {
+				return nil, err
+			}
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			default:
+				resp := models.ResponseAPIBatch{
+					CorrelationID: structOriginalURL.CorrelationID,
+					ShortURL:      shortLink,
+				}
+				respList = append(respList, resp)
+				fs.NewWrite(structOriginalURL.OriginalURL, shortLink)
 			}
 		}
+		resp := models.ResponseAPIBatch{
+			CorrelationID: structOriginalURL.CorrelationID,
+			ShortURL:      fs.checkShortLink(structOriginalURL.OriginalURL),
+		}
+		respList = append(respList, resp)
 	}
 	return respList, nil
+
+	//respList, err := fs.MemoryStorage.SetListData(ctx, reqList)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//select {
+	//case <-ctx.Done():
+	//	return nil, err
+	//default:
+	//	for idx, structOriginalUrl := range reqList {
+	//		if _, ok := fs.LinkBoolUrls[structOriginalUrl.OriginalURL]; !ok {
+	//			fs.NewWrite(structOriginalUrl.OriginalURL, respList[idx].ShortURL)
+	//		}
+	//	}
+	//}
+	//return respList, nil
 }
