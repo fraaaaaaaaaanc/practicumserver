@@ -96,12 +96,13 @@ func (fs *FileStorage) SetListData(ctx context.Context,
 				respList = append(respList, resp)
 				fs.NewWrite(structOriginalURL.OriginalURL, shortLink)
 			}
+		} else {
+			resp := models.ResponseAPIBatch{
+				CorrelationID: structOriginalURL.CorrelationID,
+				ShortURL:      fs.checkShortLink(structOriginalURL.OriginalURL),
+			}
+			respList = append(respList, resp)
 		}
-		resp := models.ResponseAPIBatch{
-			CorrelationID: structOriginalURL.CorrelationID,
-			ShortURL:      fs.checkShortLink(structOriginalURL.OriginalURL),
-		}
-		respList = append(respList, resp)
 	}
 	return respList, nil
 
