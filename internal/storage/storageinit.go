@@ -53,25 +53,6 @@ func NewStorage(log *zap.Logger,
 			log.Error("Error:", zap.Error(err))
 			return nil, err
 		}
-		//row, err := db.QueryContext(ctx, "SELECT EXISTS "+
-		//	"(SELECT 1 FROM information_schema.tables WHERE table_name = 'links')")
-		//if err != nil {
-		//	return nil, err
-		//}
-		//if row.Next() {
-		//	err = row.Scan(&exists)
-		//	if err != nil {
-		//		return nil, err
-		//	}
-		//}
-		//defer row.Close()
-		//
-		//if !exists {
-		//	db.Exec("CREATE TABLE links (" +
-		//		"id SERIAL PRIMARY KEY, " +
-		//		"Link VARCHAR(250) NOT NULL DEFAULT '' UNIQUE," +
-		//		"ShortLink VARCHAR(250) NOT NULL DEFAULT '' UNIQUE)")
-		//}
 		_, err = db.ExecContext(ctx, `
 			DO $$ 
 			BEGIN
@@ -109,7 +90,9 @@ func NewStorage(log *zap.Logger,
 			MemoryStorage: memoryStorage,
 			FileName:      FileStoragePath,
 		}
-		fs.NewRead()
+		if err := fs.NewRead(); err != nil {
+			return nil, err
+		}
 		return fs, nil
 	}
 	return memoryStorage, nil

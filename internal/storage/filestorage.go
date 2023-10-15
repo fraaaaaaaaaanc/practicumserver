@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"practicumserver/internal/models"
 	"strings"
 )
 
@@ -26,7 +27,7 @@ func (fs *FileStorage) NewRead() error {
 
 		var myData shortenURLData
 		if err := json.NewDecoder(strings.NewReader(line)).Decode(&myData); err == nil {
-			fs.MemoryStorage.SetData(context.Background(), myData.OriginalURL, myData.ShortURL)
+			fs.SetFromFileData(myData.OriginalURL, myData.ShortURL)
 		} else {
 			return err
 		}
@@ -50,15 +51,43 @@ func (fs *FileStorage) NewWrite(originalURL, ShortURL string) {
 	}
 }
 
-func (fs *FileStorage) SetData(ctx context.Context, originalURL, shortLink string) error {
+func (fs *FileStorage) SetFromFileData(originalURL, shortLink string) {
+	fs.LinkBoolUrls[originalURL] = true
+	fs.ShortBoolUrls[shortLink] = false
+	fs.ShortUrls[shortLink] = originalURL
+}
+
+func (fs *FileStorage) SetData(ctx context.Context, originalURL string) (string, error) {
+	shortLink, err := fs.MemoryStorage.SetData(ctx, originalURL)
+	if err != nil {
+		return "", err
+	}
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
+		return "", ctx.Err()
 	default:
 		if _, ok := fs.LinkBoolUrls[originalURL]; !ok {
-			fs.MemoryStorage.SetData(ctx, originalURL, shortLink)
 			fs.NewWrite(originalURL, shortLink)
 		}
-		return nil
+		return shortLink, nil
 	}
+}
+
+func (fs *FileStorage) SetListData(ctx context.Context,
+	reqList []models.RequestApiBatch) ([]models.ResponseApiBatch, error) {
+	respList, err := fs.MemoryStorage.SetListData(ctx, reqList)
+	if err != nil {
+		return nil, err
+	}
+	select {
+	case <-ctx.Done():
+		return nil, err
+	default:
+		for idx, structOriginalUrl := range reqList {
+			if _, ok := fs.LinkBoolUrls[structOriginalUrl.OriginalUrl]; !ok {
+				fs.NewWrite(structOriginalUrl.OriginalUrl, respList[idx].ShortURL)
+			}
+		}
+	}
+	return respList, nil
 }

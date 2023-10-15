@@ -161,7 +161,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 		wantPost
 	}{
 		{
-			name: "method_post_without_body",
+			name: "post request without body, result: status code 500",
 			request: request{
 				method:      http.MethodPost,
 				body:        "",
@@ -216,20 +216,6 @@ func TestPostRequestApiShorten(t *testing.T) {
 				expectCt:     "",
 			},
 		},
-		//{
-		//	name: "method_post_unsupported_type_tag",
-		//	request: request{
-		//		method:      http.MethodPost,
-		//		body:        `{"test": "http://test"}`,
-		//		contentType: "application/json; charset=utf-8",
-		//		url:         "http://localhost:8080/api/shorten",
-		//	},
-		//	wantPost: wantPost{
-		//		expectedCode: http.StatusBadRequest,
-		//		expectedBody: "",
-		//		expectCt:     "",
-		//	},
-		//},
 		{
 			name: "method_post_success",
 			request: request{
