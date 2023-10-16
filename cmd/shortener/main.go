@@ -25,7 +25,7 @@ func run() error {
 
 	defer utils.Closelog(log, flags)
 
-	rtr, err := router.Router(log.Logger, flags.Prefix, flags.FileStorage, flags.DBAdress)
+	rtr, err := router.Router(log.Logger, flags.Prefix, flags.DBStorageAdress, flags.FileStoragePath)
 	if err != nil {
 		return err
 	}

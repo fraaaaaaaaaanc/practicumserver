@@ -14,12 +14,10 @@ import (
 
 // Функция тестирования Post запроса
 func TestPostRequest(t *testing.T) {
-	strg := storage.NewStorage()
 	log, _ := logger.NewZapLogger(false)
-	hndlrs := NewHandlers(strg, log.Logger, "http://localhost:8080",
-		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
-		"/tmp/short-url-db.json")
-	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
+	strg, _ := storage.NewStorage(log.Logger, "", "")
+	hndlrs := NewHandlers(strg, log.Logger, "http://localhost:8080")
+
 	type wantPost struct {
 		statusCode  int
 		contentType string
@@ -96,12 +94,10 @@ func TestPostRequest(t *testing.T) {
 
 // Функция тестирования Get запроса
 func TestGetRequest(t *testing.T) {
-	strg := storage.NewStorage()
 	log, _ := logger.NewZapLogger(false)
-	hndlrs := NewHandlers(strg, log.Logger, "http://localhost:8080",
-		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
-		"/tmp/short-url-db.json")
-	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
+	strg, _ := storage.NewStorage(log.Logger, "", "")
+	hndlrs := NewHandlers(strg, log.Logger, "http://localhost:8080")
+
 	type wantGet struct {
 		statusCode int
 		Location   string
@@ -144,12 +140,10 @@ func TestGetRequest(t *testing.T) {
 }
 
 func TestPostRequestApiShorten(t *testing.T) {
-	strg := storage.NewStorage()
 	log, _ := logger.NewZapLogger(false)
-	hndlrs := NewHandlers(strg, log.Logger, "http://localhost:8080",
-		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
-		"/tmp/short-url-db.json")
-	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
+	strg, _ := storage.NewStorage(log.Logger, "", "")
+	hndlrs := NewHandlers(strg, log.Logger, "http://localhost:8080")
+
 	type wantPost struct {
 		expectedCode int
 		expectedBody string
@@ -167,7 +161,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 		wantPost
 	}{
 		{
-			name: "method_post_without_body",
+			name: "post request without body, result: status code 500",
 			request: request{
 				method:      http.MethodPost,
 				body:        "",
@@ -222,20 +216,6 @@ func TestPostRequestApiShorten(t *testing.T) {
 				expectCt:     "",
 			},
 		},
-		//{
-		//	name: "method_post_unsupported_type_tag",
-		//	request: request{
-		//		method:      http.MethodPost,
-		//		body:        `{"test": "http://test"}`,
-		//		contentType: "application/json; charset=utf-8",
-		//		url:         "http://localhost:8080/api/shorten",
-		//	},
-		//	wantPost: wantPost{
-		//		expectedCode: http.StatusBadRequest,
-		//		expectedBody: "",
-		//		expectCt:     "",
-		//	},
-		//},
 		{
 			name: "method_post_success",
 			request: request{

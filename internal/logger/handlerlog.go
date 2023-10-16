@@ -1,7 +1,9 @@
 package logger
 
 import (
+	"bytes"
 	"go.uber.org/zap"
+	"io"
 	"net/http"
 	"time"
 )
@@ -44,6 +46,14 @@ func MiddlewareLogHandleFunc(logger *zap.Logger) func(h http.Handler) http.Handl
 				responseData:   rd,
 			}
 
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				// Обработка ошибки чтения тела запроса
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			r.Body = io.NopCloser(bytes.NewReader(body))
 			h.ServeHTTP(&lrw, r)
 
 			duration := time.Since(start)
@@ -54,6 +64,7 @@ func MiddlewareLogHandleFunc(logger *zap.Logger) func(h http.Handler) http.Handl
 				zap.Int("status", rd.status),
 				zap.Duration("duration", duration),
 				zap.Int("size", rd.size),
+				zap.ByteString("body", body),
 			}
 			logger.Info("Received request:", fields...)
 		})

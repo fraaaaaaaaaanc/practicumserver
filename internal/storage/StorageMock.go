@@ -1,8 +1,12 @@
 package storage
 
+import (
+	"context"
+	"practicumserver/internal/models"
+)
+
 type StorageMock interface {
-	СheckShortLink(filename, link string) string
-	GetNewShortLink(link, filename string) string
-	SetData(link, shortLink string)
-	GetData(shortLink string) (string, bool)
+	SetData(ctx context.Context, link string) (string, error)
+	GetData(ctx context.Context, shortLink string) (string, error)
+	SetListData(ctx context.Context, reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error)
 }
