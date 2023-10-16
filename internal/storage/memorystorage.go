@@ -58,7 +58,7 @@ func (ms *MemoryStorage) SetData(ctx context.Context, originalURL string) (strin
 }
 
 func (ms *MemoryStorage) SetListData(ctx context.Context,
-	reqList []models.RequestAPIBatch) ([]models.ResponseAPIBatch, error) {
+	reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error) {
 	//ms.sm.Lock()
 	//defer ms.sm.Unlock()
 
@@ -75,7 +75,7 @@ func (ms *MemoryStorage) SetListData(ctx context.Context,
 		default:
 			resp := models.ResponseAPIBatch{
 				CorrelationID: structOriginalURL.CorrelationID,
-				ShortURL:      shortLink,
+				ShortURL:      prefix + "/" + shortLink,
 			}
 			respList = append(respList, resp)
 		}

@@ -23,7 +23,7 @@ func (h *Handlers) PostRequestAPIShortenBatch(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	resp, err := h.Storage.SetListData(r.Context(), req)
+	resp, err := h.Storage.SetListData(r.Context(), req, h.prefix)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))

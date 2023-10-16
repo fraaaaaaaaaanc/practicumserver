@@ -107,7 +107,8 @@ func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, e
 	}
 }
 
-func (ds *DBStorage) SetListData(ctx context.Context, reqList []models.RequestAPIBatch) ([]models.ResponseAPIBatch, error) {
+func (ds *DBStorage) SetListData(ctx context.Context,
+	reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error) {
 	ds.sm.Lock()
 	defer ds.sm.Unlock()
 
@@ -145,7 +146,7 @@ func (ds *DBStorage) SetListData(ctx context.Context, reqList []models.RequestAP
 			}
 			resp := models.ResponseAPIBatch{
 				CorrelationID: StructOriginalURL.CorrelationID,
-				ShortURL:      shortLink,
+				ShortURL:      prefix + "/" + shortLink,
 			}
 			respList = append(respList, resp)
 		}

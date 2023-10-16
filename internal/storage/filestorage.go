@@ -75,7 +75,7 @@ func (fs *FileStorage) SetData(ctx context.Context, originalURL string) (string,
 }
 
 func (fs *FileStorage) SetListData(ctx context.Context,
-	reqList []models.RequestAPIBatch) ([]models.ResponseAPIBatch, error) {
+	reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error) {
 
 	respList := make([]models.ResponseAPIBatch, 0)
 
@@ -99,7 +99,7 @@ func (fs *FileStorage) SetListData(ctx context.Context,
 		} else {
 			resp := models.ResponseAPIBatch{
 				CorrelationID: structOriginalURL.CorrelationID,
-				ShortURL:      fs.checkShortLink(structOriginalURL.OriginalURL),
+				ShortURL:      prefix + "/" + fs.checkShortLink(structOriginalURL.OriginalURL),
 			}
 			respList = append(respList, resp)
 		}
