@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go.uber.org/zap"
 	"net/http"
+	"net/url"
 	"practicumserver/internal/models"
 )
 
@@ -11,16 +12,25 @@ func (h *Handlers) PostRequestAPIShortenBatch(w http.ResponseWriter, r *http.Req
 	if r.URL.String() != "/api/shorten/batch" {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:",
-			zap.String("reason", "Invalid URL or Content-Type"))
+			zap.String("reason", "Invalid URL"))
 		return
 	}
 
 	var req []models.RequestAPIBatch
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&req); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
 		return
+	}
+
+	for _, originalURLStruct := range req {
+		if _, err := url.ParseRequestURI(originalURLStruct.OriginalURL); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			h.Log.Error("Error:",
+				zap.String("reason", "The request body isn't a url"))
+			return
+		}
 	}
 
 	resp, err := h.Storage.SetListData(r.Context(), req, h.prefix)

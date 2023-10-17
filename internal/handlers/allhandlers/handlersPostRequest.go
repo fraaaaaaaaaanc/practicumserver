@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"go.uber.org/zap"
 	"io"
 	"net/http"
@@ -25,7 +24,6 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := url.ParseRequestURI(string(link)); err != nil {
-		fmt.Println(string(link))
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:",
 			zap.String("reason", "The request body isn't a url"))

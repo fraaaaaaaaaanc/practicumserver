@@ -6,6 +6,7 @@ import (
 	"practicumserver/internal/logger"
 )
 
+// Функция закрывающая логи
 func Closelog(log *logger.ZapLogger, flags *config.Flags) {
 	log.Logger.Sync()
 	if flags.FileLog {

@@ -11,6 +11,15 @@ import (
 	"time"
 )
 
+//Комментарии для методов SetData, GetData, SetListData находятся в storage/StorageMock
+
+// Структура для хранения данных в БД
+type DBStorage struct {
+	db *sql.DB
+	StorageParam
+}
+
+// Метод проверяющий подключение к БД
 func (ds *DBStorage) PingDB(ctx context.Context) error {
 	if err := ds.db.PingContext(ctx); err != nil {
 		return err
@@ -18,11 +27,16 @@ func (ds *DBStorage) PingDB(ctx context.Context) error {
 	return nil
 }
 
+// Метод который формирует новую сокращенную ссылку и проверяет
+// cуществует ли такая сокращенная ссылка, если она есть, то функция
+// генерирует новую сокращенную ссылку пока она не будет уникальной
 func (ds *DBStorage) checkShortLink(ctx context.Context) (string, error) {
 	for {
 		shortLink := utils.LinkShortening()
 
 		var exists bool
+		//Данный запрос проверяет существует ли запись shortLink в колонке ShortLink
+		//и помещает результат в булевую переменную
 		row := ds.db.QueryRowContext(ctx,
 			"SELECT EXISTS (SELECT 1 FROM links WHERE ShortLink = $1)",
 			shortLink)
@@ -35,8 +49,13 @@ func (ds *DBStorage) checkShortLink(ctx context.Context) (string, error) {
 	}
 }
 
+// Метод который проверят наличие оригинальной ссылки в хранилище,
+// если переданная оригинальная ссылка уже есть, то код возвращает ее сокращенный
+// варинт и ошибку storage.ErrConflictData, иначе вызывает метод getNewShortLink
 func (ds *DBStorage) getNewShortLink(ctx context.Context, link string) (string, error) {
 	var shortlink string
+	//Данный запрос ищет запись ShortLink для которой Link = link(Оригинальная ссылка),
+	//если запись не найдена вызывается метод checkShortLink
 	row := ds.db.QueryRowContext(ctx,
 		"SELECT ShortLink FROM links WHERE Link = $1",
 		link)
@@ -138,11 +157,10 @@ func (ds *DBStorage) SetListData(ctx context.Context,
 					"VALUES ($1, $2)",
 				StructOriginalURL.OriginalURL, shortLink)
 			if err != nil {
-				if pqErr, ok := err.(*pgconn.PgError); ok {
-					if pqErr.Code != "23505" {
-						tx.Rollback()
-						return nil, err
-					}
+				var pqErr *pgconn.PgError
+				if errors.As(err, &pqErr) && pgerrcode.UniqueViolation == pqErr.Code {
+					tx.Rollback()
+					return nil, err
 				}
 			}
 			resp := models.ResponseAPIBatch{

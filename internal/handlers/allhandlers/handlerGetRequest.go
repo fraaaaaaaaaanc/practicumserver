@@ -7,10 +7,16 @@ import (
 
 func (h *Handlers) GetRequest(w http.ResponseWriter, r *http.Request) {
 	shortLink := r.URL.String()[1:]
+	if shortLink == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		h.Log.Error("Error: An empty link was sent to the get request")
+		return
+	}
 	baseLink, err := h.Storage.GetData(r.Context(), shortLink)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
+		return
 	}
 	if baseLink == "" {
 		w.WriteHeader(http.StatusBadRequest)

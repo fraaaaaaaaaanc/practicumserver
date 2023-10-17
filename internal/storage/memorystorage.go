@@ -6,6 +6,19 @@ import (
 	"practicumserver/internal/utils"
 )
 
+//Комментарии для методов SetData, GetData, SetListData находятся в storage/StorageMock
+
+// Структура для хранения данных в памяти
+type MemoryStorage struct {
+	ShortBoolUrls map[string]bool
+	LinkBoolUrls  map[string]bool
+	ShortUrls     map[string]string
+	StorageParam
+}
+
+// Метод который формирует новую сокращенную ссылку и проверяет
+// cуществует ли такая сокращенная ссылка, если она есть, то функция
+// генерирует новую сокращенную ссылку пока она не будет уникальной
 func (ms *MemoryStorage) getNewShortLink() string {
 	shortLink := utils.LinkShortening()
 	for ms.ShortBoolUrls[shortLink] {
@@ -14,6 +27,9 @@ func (ms *MemoryStorage) getNewShortLink() string {
 	return shortLink
 }
 
+// Метод который проверят наличие оригинальной ссылки в хранилище,
+// если переданная оригинальная ссылка уже есть, то код возвращает ее сокращенный
+// варинт и ошибку storage.ErrConflictData, иначе вызывает метод getNewShortLink
 func (ms *MemoryStorage) checkShortLink(originalURL string) (string, error) {
 	if _, ok := ms.LinkBoolUrls[originalURL]; ok {
 		for shortLink, longLink := range ms.ShortUrls {

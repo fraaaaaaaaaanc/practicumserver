@@ -14,14 +14,14 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 	if r.URL.String() != "/api/shorten" {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:",
-			zap.String("reason", "Invalid URL or Content-Type"))
+			zap.String("reason", "Invalid URL"))
 		return
 	}
 
 	var req models.RequestAPIShorten
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&req); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
 		return
 	}
@@ -39,7 +39,6 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 		h.Log.Error("Error:", zap.Error(err))
 		return
 	}
-
 	resp := models.ResponseAPIShorten{
 		ShortURL: h.prefix + "/" + newShortLink,
 	}

@@ -6,19 +6,13 @@ import (
 	"strings"
 )
 
+// Струкутра описывающая данные адреса сервера
 type Hp struct {
 	Host string
 	Port int
 }
 
-type FileStorageFlags struct {
-	FilePath string
-}
-
-type DBStorageFlags struct {
-	DBAdress string
-}
-
+// Структура описывающая поля для хранения данных флагов
 type Flags struct {
 	Prefix          string
 	LogLevel        string
@@ -29,6 +23,7 @@ type Flags struct {
 	Hp
 }
 
+// Инициализатор структры Flags задающий значения по умолчанию
 func newFlags() Flags {
 	return Flags{
 		Prefix: "http://localhost:8080",
@@ -43,10 +38,12 @@ func newFlags() Flags {
 	}
 }
 
+// Переопределение метода String для формирования адресса сервера
 func (h *Hp) String() string {
 	return h.Host + ":" + strconv.Itoa(h.Port)
 }
 
+// Переопределение метода Set для проверки адресса сервера и записи данных в структуру Hp
 func (h *Hp) Set(addres string) error {
 	if addres == "" {
 		h.Host = "localhost"

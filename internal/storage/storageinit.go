@@ -8,36 +8,25 @@ import (
 	"sync"
 )
 
+// Структура с ощими элементами для каждого storage
 type StorageParam struct {
 	log *zap.Logger
 	sm  *sync.Mutex
 }
 
-type DBStorage struct {
-	db *sql.DB
-	StorageParam
-}
-
-type FileStorage struct {
-	FileName string
-	*MemoryStorage
-	StorageParam
-}
-
-type MemoryStorage struct {
-	ShortBoolUrls map[string]bool
-	LinkBoolUrls  map[string]bool
-	ShortUrls     map[string]string
-	StorageParam
-}
-
+// Функция NewStorage принимает параметры log(для логирования), и две булевые переменные
+// полученные при парсинге флагов. Функция проверяет эти флаги, если тот или иной флга
+// принимает значени true, то функция создает объект storage того типа, реализующий
+// интерфейс storage.StorageMock
 func NewStorage(log *zap.Logger,
 	DBStorageAdress, FileStoragePath string) (StorageMock, error) {
+	//Cоздание структуры с общими элементами для кажлого storage
 	var sm sync.Mutex
 	strg := StorageParam{
 		log: log,
 		sm:  &sm,
 	}
+	//Создание storage для работы с БД
 	if DBStorageAdress != "" {
 		db, err := sql.Open("pgx",
 			DBStorageAdress)
@@ -53,6 +42,9 @@ func NewStorage(log *zap.Logger,
 			log.Error("Error:", zap.Error(err))
 			return nil, err
 		}
+		//Данный запрос создает таблицу links в БД, если ее там нет,
+		//Данная таблица имеет три поля id, Link, ShortLink
+		//Поле id является PRIMARY KEY, а поля Link, ShortLink не могу повторятся (UNIQUE)
 		_, err = db.ExecContext(ctx, `
 			DO $$ 
 			BEGIN
@@ -73,6 +65,11 @@ func NewStorage(log *zap.Logger,
 			StorageParam: strg,
 		}, nil
 	}
+	//Создание storage для хранения данных в памяти
+	//Данный storage создается раньше чем storage для работы с файлами
+	//т.к. он является анонимным полем второго
+	//При создании этого storage сразу создаются некоторе поля в map-ах
+	//для тестирования
 	memoryStorage := &MemoryStorage{
 		StorageParam: strg,
 		ShortBoolUrls: map[string]bool{
@@ -85,6 +82,7 @@ func NewStorage(log *zap.Logger,
 			"test": "http://test",
 		},
 	}
+	//Создание storage для хранения данных в файле
 	if FileStoragePath != "" {
 		fs := &FileStorage{
 			MemoryStorage: memoryStorage,

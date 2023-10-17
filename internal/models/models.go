@@ -1,5 +1,6 @@
 package models
 
+// Стркуры реализующие формы запросов и ответов при POST запросах к адрессу /api/shorten
 type (
 	RequestAPIShorten struct {
 		LongURL string `json:"url"`
@@ -10,6 +11,7 @@ type (
 	}
 )
 
+// Стркуры реализующие формы запросов и ответов при POST запросах к адрессу /api/shorten/batch
 type (
 	RequestAPIBatch struct {
 		CorrelationID string `json:"correlation_id"`
