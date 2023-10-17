@@ -2,17 +2,16 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"go.uber.org/zap"
 	"net/http"
 	"net/url"
 	"practicumserver/internal/models"
-	"practicumserver/internal/utils"
+	"practicumserver/internal/storage"
 )
 
 func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request) {
-	contentType := r.Header.Get("Content-Type")
-	if (!utils.ValidContentType(contentType, "application/json") && contentType != "application/x-gzip") ||
-		r.URL.String() != "/api/shorten" {
+	if r.URL.String() != "/api/shorten" {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:",
 			zap.String("reason", "Invalid URL or Content-Type"))
@@ -35,7 +34,7 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 	}
 
 	newShortLink, err := h.Storage.SetData(r.Context(), req.LongURL)
-	if err != nil {
+	if err != nil && !errors.Is(err, storage.ErrConflictData) {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
 		return
@@ -45,10 +44,13 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 		ShortURL: h.prefix + "/" + newShortLink,
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	httpStatus := http.StatusCreated
+	if errors.Is(err, storage.ErrConflictData) {
+		httpStatus = http.StatusConflict
+	}
+	w.WriteHeader(httpStatus)
 
 	enc := json.NewEncoder(w)
-	enc.SetEscapeHTML(false)
 	if err := enc.Encode(resp); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))

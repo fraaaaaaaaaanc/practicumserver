@@ -1,17 +1,17 @@
 package handlers
 
 import (
+	"errors"
+	"fmt"
 	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"net/url"
-	"practicumserver/internal/utils"
+	"practicumserver/internal/storage"
 )
 
 func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
-	contentType := r.Header.Get("Content-Type")
-	if (!utils.ValidContentType(contentType, "text/plain") && contentType != "application/x-gzip") ||
-		r.URL.String() != "/" {
+	if r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:",
 			zap.String("reason", "Invalid URL or Content-Type"))
@@ -25,6 +25,7 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := url.ParseRequestURI(string(link)); err != nil {
+		fmt.Println(string(link))
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:",
 			zap.String("reason", "The request body isn't a url"))
@@ -39,13 +40,17 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	newShortLink, err := h.Storage.SetData(r.Context(), string(link))
-	if err != nil {
+	if err != nil && !errors.Is(err, storage.ErrConflictData) {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
 		return
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusCreated)
+	httpStatus := http.StatusCreated
+	if errors.Is(err, storage.ErrConflictData) {
+		httpStatus = http.StatusConflict
+	}
+	w.WriteHeader(httpStatus)
 	_, _ = w.Write([]byte(h.prefix + "/" + newShortLink))
 }

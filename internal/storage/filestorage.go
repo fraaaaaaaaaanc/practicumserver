@@ -71,7 +71,7 @@ func (fs *FileStorage) SetData(ctx context.Context, originalURL string) (string,
 			return shortLink, nil
 		}
 	}
-	return fs.checkShortLink(originalURL), nil
+	return fs.checkShortLink(originalURL)
 }
 
 func (fs *FileStorage) SetListData(ctx context.Context,
@@ -97,28 +97,13 @@ func (fs *FileStorage) SetListData(ctx context.Context,
 				fs.NewWrite(structOriginalURL.OriginalURL, shortLink)
 			}
 		} else {
+			shortLink, _ := fs.checkShortLink(structOriginalURL.OriginalURL)
 			resp := models.ResponseAPIBatch{
 				CorrelationID: structOriginalURL.CorrelationID,
-				ShortURL:      prefix + "/" + fs.checkShortLink(structOriginalURL.OriginalURL),
+				ShortURL:      shortLink,
 			}
 			respList = append(respList, resp)
 		}
 	}
 	return respList, nil
-
-	//respList, err := fs.MemoryStorage.SetListData(ctx, reqList)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//select {
-	//case <-ctx.Done():
-	//	return nil, err
-	//default:
-	//	for idx, structOriginalUrl := range reqList {
-	//		if _, ok := fs.LinkBoolUrls[structOriginalUrl.OriginalURL]; !ok {
-	//			fs.NewWrite(structOriginalUrl.OriginalURL, respList[idx].ShortURL)
-	//		}
-	//	}
-	//}
-	//return respList, nil
 }

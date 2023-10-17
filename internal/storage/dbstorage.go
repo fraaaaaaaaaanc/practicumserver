@@ -3,6 +3,8 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"practicumserver/internal/models"
 	"practicumserver/internal/utils"
@@ -96,12 +98,11 @@ func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, e
 				"VALUES ($1, $2)",
 			originalURL, shortLink)
 		if err != nil {
-			if pqErr, ok := err.(*pgconn.PgError); ok {
-				if pqErr.Code == "23505" {
-					return shortLink, nil
-				}
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) && pgerrcode.UniqueViolation == pgErr.Code {
+				err = ErrConflictData
 			}
-			return "", err
+			return shortLink, err
 		}
 		return shortLink, nil
 	}

@@ -47,12 +47,12 @@ func TestPostRequest(t *testing.T) {
 		{
 			name: "test two!",
 			want: wantPost{
-				statusCode:  400,
-				contentType: "",
+				statusCode:  409,
+				contentType: "text/plain",
 			},
 			request: request{
 				body:        strings.NewReader("http://hlijutdqqmefpt.net/zeosh/sthbp"),
-				contentType: "json",
+				contentType: "text/plain; charset=utf-8",
 			},
 			url: "/",
 		},
@@ -174,34 +174,34 @@ func TestPostRequestApiShorten(t *testing.T) {
 				expectCt:     "",
 			},
 		},
-		{
-			name: "method_post_with_wrong_content_type",
-			request: request{
-				method:      http.MethodPost,
-				body:        "",
-				contentType: "text/plain; charset=utf-8",
-				url:         "http://localhost:8080/api/shorten",
-			},
-			wantPost: wantPost{
-				expectedCode: http.StatusBadRequest,
-				expectedBody: "",
-				expectCt:     "",
-			},
-		},
-		{
-			name: "method_post_with_any_url",
-			request: request{
-				method:      http.MethodPost,
-				body:        "",
-				contentType: "text/plain; charset=utf-8",
-				url:         "http://localhost:8080/api/shorten/test",
-			},
-			wantPost: wantPost{
-				expectedCode: http.StatusBadRequest,
-				expectedBody: "",
-				expectCt:     "",
-			},
-		},
+		//{
+		//	name: "method_post_with_wrong_content_type",
+		//	request: request{
+		//		method:      http.MethodPost,
+		//		body:        "",
+		//		contentType: "text/plain; charset=utf-8",
+		//		url:         "http://localhost:8080/api/shorten",
+		//	},
+		//	wantPost: wantPost{
+		//		expectedCode: http.StatusBadRequest,
+		//		expectedBody: "",
+		//		expectCt:     "",
+		//	},
+		//},
+		//{
+		//	name: "method_post_with_any_url",
+		//	request: request{
+		//		method:      http.MethodPost,
+		//		body:        "",
+		//		contentType: "text/plain; charset=utf-8",
+		//		url:         "http://localhost:8080/api/shorten/test",
+		//	},
+		//	wantPost: wantPost{
+		//		expectedCode: http.StatusBadRequest,
+		//		expectedBody: "",
+		//		expectCt:     "",
+		//	},
+		//},
 		{
 			name: "method_post_unsupported_type_value",
 			request: request{
@@ -225,7 +225,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				url:         "http://localhost:8080/api/shorten",
 			},
 			wantPost: wantPost{
-				expectedCode: http.StatusCreated,
+				expectedCode: http.StatusConflict,
 				expectedBody: `{"result":"http://localhost:8080/test"}`,
 				expectCt:     "application/json",
 			},

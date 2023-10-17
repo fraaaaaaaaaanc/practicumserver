@@ -14,15 +14,15 @@ func (ms *MemoryStorage) getNewShortLink() string {
 	return shortLink
 }
 
-func (ms *MemoryStorage) checkShortLink(link string) string {
-	if _, ok := ms.LinkBoolUrls[link]; ok {
+func (ms *MemoryStorage) checkShortLink(originalURL string) (string, error) {
+	if _, ok := ms.LinkBoolUrls[originalURL]; ok {
 		for shortLink, longLink := range ms.ShortUrls {
-			if longLink == link {
-				return shortLink
+			if longLink == originalURL {
+				return shortLink, ErrConflictData
 			}
 		}
 	}
-	return ms.getNewShortLink()
+	return ms.getNewShortLink(), nil
 }
 
 func (ms *MemoryStorage) GetData(ctx context.Context, shortLink string) (string, error) {
@@ -47,13 +47,13 @@ func (ms *MemoryStorage) SetData(ctx context.Context, originalURL string) (strin
 	case <-ctx.Done():
 		return "", ctx.Err()
 	default:
-		shortLink := ms.checkShortLink(originalURL)
+		shortLink, err := ms.checkShortLink(originalURL)
 		if _, ok := ms.LinkBoolUrls[originalURL]; !ok {
 			ms.ShortUrls[shortLink] = originalURL
 			ms.ShortBoolUrls[shortLink] = true
 			ms.LinkBoolUrls[originalURL] = true
 		}
-		return shortLink, nil
+		return shortLink, err
 	}
 }
 

@@ -64,7 +64,6 @@ func MiddlewareLogHandleFunc(logger *zap.Logger) func(h http.Handler) http.Handl
 				zap.Int("status", rd.status),
 				zap.Duration("duration", duration),
 				zap.Int("size", rd.size),
-				zap.ByteString("body", body),
 			}
 			logger.Info("Received request:", fields...)
 		})
