@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"practicumserver/internal/models"
+	"practicumserver/internal/storage"
 	"practicumserver/internal/utils"
 )
 
@@ -34,7 +35,7 @@ func (ms *MemoryStorage) checkShortLink(originalURL string) (string, error) {
 	if _, ok := ms.LinkBoolUrls[originalURL]; ok {
 		for shortLink, longLink := range ms.ShortUrls {
 			if longLink == originalURL {
-				return shortLink, ErrConflictData
+				return shortLink, storage.ErrConflictData
 			}
 		}
 	}

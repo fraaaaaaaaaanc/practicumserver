@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"practicumserver/internal/handlers/allhandlers"
 	"practicumserver/internal/logger"
-	"practicumserver/internal/storage"
+	"practicumserver/internal/storage/pg"
 	"testing"
 )
 

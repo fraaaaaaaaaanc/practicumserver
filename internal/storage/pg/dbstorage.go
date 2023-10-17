@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"practicumserver/internal/models"
+	"practicumserver/internal/storage"
 	"practicumserver/internal/utils"
 	"time"
 )
@@ -15,13 +16,13 @@ import (
 
 // Структура для хранения данных в БД
 type DBStorage struct {
-	db *sql.DB
+	DB *sql.DB
 	StorageParam
 }
 
 // Метод проверяющий подключение к БД
 func (ds *DBStorage) PingDB(ctx context.Context) error {
-	if err := ds.db.PingContext(ctx); err != nil {
+	if err := ds.DB.PingContext(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -37,7 +38,7 @@ func (ds *DBStorage) checkShortLink(ctx context.Context) (string, error) {
 		var exists bool
 		//Данный запрос проверяет существует ли запись shortLink в колонке ShortLink
 		//и помещает результат в булевую переменную
-		row := ds.db.QueryRowContext(ctx,
+		row := ds.DB.QueryRowContext(ctx,
 			"SELECT EXISTS (SELECT 1 FROM links WHERE ShortLink = $1)",
 			shortLink)
 		if err := row.Scan(&exists); err != nil {
@@ -56,7 +57,7 @@ func (ds *DBStorage) getNewShortLink(ctx context.Context, link string) (string, 
 	var shortlink string
 	//Данный запрос ищет запись ShortLink для которой Link = link(Оригинальная ссылка),
 	//если запись не найдена вызывается метод checkShortLink
-	row := ds.db.QueryRowContext(ctx,
+	row := ds.DB.QueryRowContext(ctx,
 		"SELECT ShortLink FROM links WHERE Link = $1",
 		link)
 	if err := row.Scan(&shortlink); err != nil {
@@ -80,7 +81,7 @@ func (ds *DBStorage) GetData(ctx context.Context, shortLink string) (string, err
 	defer cansel()
 
 	var originLink string
-	row := ds.db.QueryRowContext(ctx,
+	row := ds.DB.QueryRowContext(ctx,
 		"SELECT Link FROM links WHERE ShortLink= $1",
 		shortLink)
 
@@ -112,14 +113,14 @@ func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, e
 	case <-ctx.Done():
 		return "", ctx.Err()
 	default:
-		_, err = ds.db.ExecContext(ctx,
+		_, err = ds.DB.ExecContext(ctx,
 			"INSERT INTO links (Link, ShortLink) "+
 				"VALUES ($1, $2)",
 			originalURL, shortLink)
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgerrcode.UniqueViolation == pgErr.Code {
-				err = ErrConflictData
+				err = storage.ErrConflictData
 			}
 			return shortLink, err
 		}
@@ -132,7 +133,7 @@ func (ds *DBStorage) SetListData(ctx context.Context,
 	ds.sm.Lock()
 	defer ds.sm.Unlock()
 
-	tx, err := ds.db.Begin()
+	tx, err := ds.DB.Begin()
 	if err != nil {
 		return nil, err
 	}

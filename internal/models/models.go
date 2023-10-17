@@ -3,11 +3,11 @@ package models
 // Стркуры реализующие формы запросов и ответов при POST запросах к адрессу /api/shorten
 type (
 	RequestAPIShorten struct {
-		LongURL string `json:"url"`
+		OriginalURL string `json:"url"`
 	}
 
 	ResponseAPIShorten struct {
-		ShortURL string `json:"result"`
+		ShortLink string `json:"result"`
 	}
 )
 

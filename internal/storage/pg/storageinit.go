@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
+	"practicumserver/internal/storage"
 	"sync"
 )
 
@@ -19,7 +20,7 @@ type StorageParam struct {
 // принимает значени true, то функция создает объект storage того типа, реализующий
 // интерфейс storage.StorageMock
 func NewStorage(log *zap.Logger,
-	DBStorageAdress, FileStoragePath string) (StorageMock, error) {
+	DBStorageAdress, FileStoragePath string) (storage.StorageMock, error) {
 	//Cоздание структуры с общими элементами для кажлого storage
 	var sm sync.Mutex
 	strg := StorageParam{
@@ -61,7 +62,7 @@ func NewStorage(log *zap.Logger,
 			return nil, err
 		}
 		return &DBStorage{
-			db:           db,
+			DB:           db,
 			StorageParam: strg,
 		}, nil
 	}

@@ -9,7 +9,7 @@ import (
 	"net/http/httptest"
 	"practicumserver/internal/handlers/allhandlers"
 	"practicumserver/internal/logger"
-	"practicumserver/internal/storage"
+	"practicumserver/internal/storage/pg"
 	"testing"
 )
 
@@ -24,7 +24,7 @@ func (h HandlerFuncAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func TestMiddlewareGzipHandleFunc(t *testing.T) {
 	log, _ := logger.NewZapLogger(false)
-	strg, _ := storage.NewStorage(log.Logger, "", "")
+	strg, _ := pg.NewStorage(log.Logger, "", "")
 	hndlrs := handlers.NewHandlers(strg, log.Logger, "http://localhost:8080")
 
 	adapter := HandlerFuncAdapter(hndlrs.PostRequestAPIShorten)

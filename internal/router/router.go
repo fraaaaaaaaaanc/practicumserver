@@ -7,19 +7,9 @@ import (
 	"practicumserver/internal/compress"
 	"practicumserver/internal/handlers/allhandlers"
 	"practicumserver/internal/logger"
-	"practicumserver/internal/storage"
 )
 
-func Router(log *zap.Logger, prefix string,
-	dbStorageAdress, fileStoragePath string) (chi.Router, error) {
-	//Создание объекта storage реализующего интерфейсный тип storage.StorageMock
-	strg, err := storage.NewStorage(log, dbStorageAdress, fileStoragePath)
-	if err != nil {
-		return nil, err
-	}
-	//Создание объекта handlers
-	hndlrs := handlers.NewHandlers(strg, log, prefix)
-
+func Router(hndlrs *handlers.Handlers, log *zap.Logger) (chi.Router, error) {
 	//Создание объекта *Mux
 	r := chi.NewRouter()
 
