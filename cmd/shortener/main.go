@@ -28,12 +28,12 @@ func run() error {
 	//Закрытие логов
 	defer utils.Closelog(log, flags)
 	//Создание объекта storage реализующего интерфейсный тип storage.StorageMock
-	strg, err := pg.NewStorage(log.Logger, flags.DBStorageAdress, flags.FileStoragePath)
+	strg, err := storage.NewStorage(log.Logger, flags.DBStorageAdress, flags.FileStoragePath)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if DBstrg, ok := strg.(*pg.DBStorage); ok {
+		if DBstrg, ok := strg.(*storage.DBStorage); ok {
 			DBstrg.DB.Close()
 		}
 	}()
