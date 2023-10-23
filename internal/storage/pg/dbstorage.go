@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"practicumserver/internal/models"
@@ -114,9 +115,9 @@ func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, e
 		return "", ctx.Err()
 	default:
 		_, err = ds.DB.ExecContext(ctx,
-			"INSERT INTO links (Link, ShortLink) "+
-				"VALUES ($1, $2)",
-			originalURL, shortLink)
+			"INSERT INTO links (UserID, Link, ShortLink) "+
+				"VALUES ($1, $2, $3)",
+			ctx.Value("userID"), originalURL, shortLink)
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgerrcode.UniqueViolation == pgErr.Code {
@@ -154,9 +155,9 @@ func (ds *DBStorage) SetListData(ctx context.Context,
 			return nil, err
 		default:
 			_, err = tx.ExecContext(ctx,
-				"INSERT INTO links (Link, ShortLink) "+
-					"VALUES ($1, $2)",
-				StructOriginalURL.OriginalURL, shortLink)
+				"INSERT INTO links (UserID, Link, ShortLink) "+
+					"VALUES ($1, $2, $3)",
+				ctx.Value("userID"), StructOriginalURL.OriginalURL, shortLink)
 			if err != nil {
 				var pqErr *pgconn.PgError
 				if errors.As(err, &pqErr) && pgerrcode.UniqueViolation == pqErr.Code {
@@ -173,4 +174,38 @@ func (ds *DBStorage) SetListData(ctx context.Context,
 	}
 	tx.Commit()
 	return respList, nil
+}
+
+func (ds *DBStorage) GetListData(ctx context.Context, prefix string) ([]models.ResponseAPIUserUrls, error) {
+	var resp []models.ResponseAPIUserUrls
+	fmt.Println(ctx.Value("userID"))
+	rows, err := ds.DB.QueryContext(ctx,
+		"SELECT ShortLink, Link FROM links WHERE UserID = $1",
+		ctx.Value("userID"))
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var oneResp models.ResponseAPIUserUrls
+		if err = rows.Scan(&oneResp.ShortURL, &oneResp.OriginalURL); err != nil {
+			return nil, err
+		}
+		oneResp.ShortURL = prefix + "/" + oneResp.ShortURL
+		resp = append(resp, oneResp)
+	}
+	return resp, nil
+}
+
+func (ds *DBStorage) CheckUserID(ctx context.Context, userID string) (bool, error) {
+	row := ds.DB.QueryRowContext(ctx,
+		"SELECT EXISTS(SELECT 1 FROM links WHERE UserID = $1)",
+		userID)
+	var exists bool
+	if err := row.Scan(&exists); err != nil {
+		return false, err
+	}
+	if !exists {
+		return true, nil
+	}
+	return false, nil
 }

@@ -21,7 +21,9 @@ type StorageMock interface {
 	//сокращенный URL в слайс respList []models.ResponseAPIBatch
 	//Метод возвращает слайс []models.ResponseAPIBatch и объект типа error
 	SetListData(ctx context.Context, reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error)
+	GetListData(ctx context.Context, prefix string) ([]models.ResponseAPIUserUrls, error)
+	CheckUserID(ctx context.Context, userID string) (bool, error)
 }
 
 // Ошибка сообщающая о конфликте данных в хранилище
-var ErrConflictData = errors.New("data conflict: the resulting url already exists in the storage")
+var ErrConflictData = errors.New("data conflict, the resulting url already exists in the storage")

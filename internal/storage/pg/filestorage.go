@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 	"practicumserver/internal/models"
@@ -11,10 +12,6 @@ import (
 )
 
 // Структура для хранения данных при их чтении из файла методом NewRead
-type shortenURLData struct {
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
 
 // Структура для хранения данных в файле
 type FileStorage struct {
@@ -34,9 +31,9 @@ func (fs *FileStorage) NewRead() error {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		var myData shortenURLData
-		if err := json.NewDecoder(strings.NewReader(line)).Decode(&myData); err == nil {
-			fs.SetFromFileData(myData.OriginalURL, myData.ShortURL)
+		var fileData models.FileData
+		if err := json.NewDecoder(strings.NewReader(line)).Decode(&fileData); err == nil {
+			fs.SetFromFileData(&fileData)
 		} else {
 			return err
 		}
@@ -45,27 +42,32 @@ func (fs *FileStorage) NewRead() error {
 }
 
 // Метод для записи данных в файл
-func (fs *FileStorage) NewWrite(originalURL, ShortURL string) {
+func (fs *FileStorage) NewWrite(userIDStr, originalURL, ShortURL string) {
 	file, err := os.OpenFile(fs.FileName, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
-	myData := shortenURLData{
+	fileData := models.FileData{
+		UserID:      userIDStr,
 		ShortURL:    ShortURL,
 		OriginalURL: originalURL,
 	}
 
-	if err := json.NewEncoder(file).Encode(myData); err != nil {
+	if err := json.NewEncoder(file).Encode(fileData); err != nil {
 		log.Fatal(err)
 	}
 }
 
 // Метод для записи данных в поля структура MemoryStorage при чтении их из файла
-func (fs *FileStorage) SetFromFileData(originalURL, shortLink string) {
-	fs.LinkBoolUrls[originalURL] = true
-	fs.ShortBoolUrls[shortLink] = false
-	fs.ShortUrls[shortLink] = originalURL
+func (fs *FileStorage) SetFromFileData(fileData *models.FileData) {
+	fs.LinkBoolUrls[fileData.OriginalURL] = true
+	fs.ShortBoolUrls[fileData.ShortURL] = false
+	fs.ShortUrls[fileData.ShortURL] = fileData.OriginalURL
+	if fs.UserIDUrls[fileData.UserID] == nil {
+		fs.UserIDUrls[fileData.UserID] = make(map[string]string)
+	}
+	fs.UserIDUrls[fileData.UserID][fileData.ShortURL] = fileData.OriginalURL
 }
 
 // Переопределение метожа SetData структуры MemoryStorage
@@ -76,13 +78,11 @@ func (fs *FileStorage) SetData(ctx context.Context, originalURL string) (string,
 		if err != nil {
 			return "", err
 		}
-		select {
-		case <-ctx.Done():
-			return "", ctx.Err()
-		default:
-			fs.NewWrite(originalURL, shortLink)
+		if userIDStr, ok := ctx.Value("userID").(string); ok {
+			fs.NewWrite(userIDStr, originalURL, shortLink)
 			return shortLink, nil
 		}
+		return "", errors.New("UserID is not valid type string")
 	}
 	return fs.checkShortLink(originalURL)
 }
@@ -97,31 +97,38 @@ func (fs *FileStorage) SetListData(ctx context.Context,
 
 	respList := make([]models.ResponseAPIBatch, 0)
 
-	for _, structOriginalURL := range reqList {
-		if _, ok := fs.LinkBoolUrls[structOriginalURL.OriginalURL]; !ok {
-			shortLink, err := fs.MemoryStorage.SetData(ctx, structOriginalURL.OriginalURL)
-			if err != nil {
-				return nil, err
-			}
-			select {
-			case <-ctx.Done():
-				return nil, ctx.Err()
-			default:
+	if userIDStr, ok := ctx.Value("userID").(string); ok {
+		for _, structOriginalURL := range reqList {
+			if _, ok := fs.LinkBoolUrls[structOriginalURL.OriginalURL]; !ok {
+				shortLink, err := fs.MemoryStorage.SetData(ctx, structOriginalURL.OriginalURL)
+				if err != nil {
+					return nil, err
+				}
+				select {
+				case <-ctx.Done():
+					return nil, ctx.Err()
+				default:
+					resp := models.ResponseAPIBatch{
+						CorrelationID: structOriginalURL.CorrelationID,
+						ShortURL:      prefix + "/" + shortLink,
+					}
+					respList = append(respList, resp)
+					fs.NewWrite(userIDStr, structOriginalURL.OriginalURL, shortLink)
+				}
+			} else {
+				shortLink, _ := fs.checkShortLink(structOriginalURL.OriginalURL)
 				resp := models.ResponseAPIBatch{
 					CorrelationID: structOriginalURL.CorrelationID,
 					ShortURL:      prefix + "/" + shortLink,
 				}
 				respList = append(respList, resp)
-				fs.NewWrite(structOriginalURL.OriginalURL, shortLink)
 			}
-		} else {
-			shortLink, _ := fs.checkShortLink(structOriginalURL.OriginalURL)
-			resp := models.ResponseAPIBatch{
-				CorrelationID: structOriginalURL.CorrelationID,
-				ShortURL:      prefix + "/" + shortLink,
-			}
-			respList = append(respList, resp)
 		}
+		return respList, nil
 	}
-	return respList, nil
+	return nil, errors.New("UserID is not valid type string")
+}
+
+func (fs *FileStorage) GetListData(ctx context.Context, prefix string) ([]models.ResponseAPIUserUrls, error) {
+	return fs.MemoryStorage.GetListData(ctx, prefix)
 }

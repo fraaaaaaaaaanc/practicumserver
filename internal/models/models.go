@@ -23,3 +23,14 @@ type (
 		ShortURL      string `json:"short_url"`
 	}
 )
+
+type ResponseAPIUserUrls struct {
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+}
+
+type FileData struct {
+	UserID      string `json:"user_id"`
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+}

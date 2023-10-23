@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"practicumserver/internal/models"
 	"practicumserver/internal/storage"
 	"practicumserver/internal/utils"
@@ -14,6 +15,7 @@ type MemoryStorage struct {
 	ShortBoolUrls map[string]bool
 	LinkBoolUrls  map[string]bool
 	ShortUrls     map[string]string
+	UserIDUrls    map[string]map[string]string
 	StorageParam
 }
 
@@ -60,18 +62,24 @@ func (ms *MemoryStorage) SetData(ctx context.Context, originalURL string) (strin
 	ms.sm.Lock()
 	defer ms.sm.Unlock()
 
-	select {
-	case <-ctx.Done():
-		return "", ctx.Err()
-	default:
-		shortLink, err := ms.checkShortLink(originalURL)
-		if _, ok := ms.LinkBoolUrls[originalURL]; !ok {
-			ms.ShortUrls[shortLink] = originalURL
-			ms.ShortBoolUrls[shortLink] = true
-			ms.LinkBoolUrls[originalURL] = true
-		}
+	shortLink, err := ms.checkShortLink(originalURL)
+	if err != nil {
 		return shortLink, err
 	}
+	userID := ctx.Value("userID")
+	if userIDStr, ok := userID.(string); ok {
+		if _, ok = ms.LinkBoolUrls[originalURL]; !ok {
+			ms.ShortUrls[shortLink] = originalURL
+			if ms.UserIDUrls[userIDStr] == nil {
+				ms.UserIDUrls[userIDStr] = make(map[string]string)
+			}
+			ms.UserIDUrls[userIDStr][shortLink] = originalURL
+			ms.ShortBoolUrls[shortLink] = true
+			ms.LinkBoolUrls[originalURL] = true
+			return shortLink, nil
+		}
+	}
+	return "", errors.New("UserID is not valid type string")
 }
 
 func (ms *MemoryStorage) SetListData(ctx context.Context,
@@ -98,4 +106,26 @@ func (ms *MemoryStorage) SetListData(ctx context.Context,
 		}
 	}
 	return respList, nil
+}
+
+func (ms *MemoryStorage) GetListData(ctx context.Context, prefix string) ([]models.ResponseAPIUserUrls, error) {
+	var resp []models.ResponseAPIUserUrls
+	userID := ctx.Value("userID")
+	if userIDStr, ok := userID.(string); ok {
+		for key, elem := range ms.UserIDUrls[userIDStr] {
+			oneResp := models.ResponseAPIUserUrls{
+				ShortURL:    prefix + "/" + key,
+				OriginalURL: elem,
+			}
+			resp = append(resp, oneResp)
+		}
+	}
+	return resp, nil
+}
+
+func (ms *MemoryStorage) CheckUserID(ctx context.Context, userID string) (bool, error) {
+	if _, ok := ms.UserIDUrls[userID]; !ok {
+		return true, nil
+	}
+	return false, nil
 }

@@ -52,6 +52,7 @@ func NewStorage(log *zap.Logger,
 				IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'links') THEN
 					CREATE TABLE links (
 						id SERIAL PRIMARY KEY, 
+						UserID VARCHAR(24) NOT NULL DEFAULT '', 
 						Link VARCHAR(250) NOT NULL DEFAULT '' UNIQUE,
 						ShortLink VARCHAR(250) NOT NULL DEFAULT '' UNIQUE
 					);
@@ -81,6 +82,9 @@ func NewStorage(log *zap.Logger,
 		},
 		ShortUrls: map[string]string{
 			"test": "http://test",
+		},
+		UserIDUrls: map[string]map[string]string{
+			"test": {"test": "http://test"},
 		},
 	}
 	//Создание storage для хранения данных в файле
