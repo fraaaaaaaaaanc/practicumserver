@@ -70,9 +70,9 @@ func (fs *FileStorage) SetFromFileData(originalURL, shortLink string) {
 
 // Переопределение метожа SetData структуры MemoryStorage
 // Метод вызывает SetData после чего записывает данные в файл методом NewWrite
-func (fs *FileStorage) SetData(ctx context.Context, originalURL string) (string, error) {
+func (fs *FileStorage) SetData(ctx context.Context, prefix, originalURL string) (string, error) {
 	if _, ok := fs.LinkBoolUrls[originalURL]; !ok {
-		shortLink, err := fs.MemoryStorage.SetData(ctx, originalURL)
+		shortLink, err := fs.MemoryStorage.SetData(ctx, prefix, originalURL)
 		if err != nil {
 			return "", err
 		}
@@ -84,7 +84,7 @@ func (fs *FileStorage) SetData(ctx context.Context, originalURL string) (string,
 			return shortLink, nil
 		}
 	}
-	return fs.checkShortLink(originalURL)
+	return fs.checkShortLink(prefix, originalURL)
 }
 
 // Метод принимает слайс оригинальных URL reqList []models.RequestAPIBatch
@@ -99,7 +99,7 @@ func (fs *FileStorage) SetListData(ctx context.Context,
 
 	for _, structOriginalURL := range reqList {
 		if _, ok := fs.LinkBoolUrls[structOriginalURL.OriginalURL]; !ok {
-			shortLink, err := fs.MemoryStorage.SetData(ctx, structOriginalURL.OriginalURL)
+			shortLink, err := fs.MemoryStorage.SetData(ctx, prefix, structOriginalURL.OriginalURL)
 			if err != nil {
 				return nil, err
 			}
@@ -109,19 +109,23 @@ func (fs *FileStorage) SetListData(ctx context.Context,
 			default:
 				resp := models.ResponseAPIBatch{
 					CorrelationID: structOriginalURL.CorrelationID,
-					ShortURL:      prefix + "/" + shortLink,
+					ShortURL:      shortLink,
 				}
 				respList = append(respList, resp)
 				fs.NewWrite(structOriginalURL.OriginalURL, shortLink)
 			}
 		} else {
-			shortLink, _ := fs.checkShortLink(structOriginalURL.OriginalURL)
+			shortLink, _ := fs.checkShortLink(prefix, structOriginalURL.OriginalURL)
 			resp := models.ResponseAPIBatch{
 				CorrelationID: structOriginalURL.CorrelationID,
-				ShortURL:      prefix + "/" + shortLink,
+				ShortURL:      shortLink,
 			}
 			respList = append(respList, resp)
 		}
 	}
 	return respList, nil
+}
+
+func (fs *FileStorage) GetListData(ctx context.Context) ([]models.ResponseApiUserUrls, error) {
+	return nil, nil
 }

@@ -51,7 +51,8 @@ func NewStorage(log *zap.Logger,
 			BEGIN
 				IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'links') THEN
 					CREATE TABLE links (
-						id SERIAL PRIMARY KEY, 
+						id SERIAL PRIMARY KEY,
+						Userid varchar(24) NOT NULL DEFAULT '',
 						Link VARCHAR(250) NOT NULL DEFAULT '' UNIQUE,
 						ShortLink VARCHAR(250) NOT NULL DEFAULT '' UNIQUE
 					);

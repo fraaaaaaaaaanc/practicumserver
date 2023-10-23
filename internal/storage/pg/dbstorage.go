@@ -31,7 +31,7 @@ func (ds *DBStorage) PingDB(ctx context.Context) error {
 // Метод который формирует новую сокращенную ссылку и проверяет
 // cуществует ли такая сокращенная ссылка, если она есть, то функция
 // генерирует новую сокращенную ссылку пока она не будет уникальной
-func (ds *DBStorage) checkShortLink(ctx context.Context) (string, error) {
+func (ds *DBStorage) getNewShortLink(ctx context.Context) (string, error) {
 	for {
 		shortLink := utils.LinkShortening()
 
@@ -53,7 +53,7 @@ func (ds *DBStorage) checkShortLink(ctx context.Context) (string, error) {
 // Метод который проверят наличие оригинальной ссылки в хранилище,
 // если переданная оригинальная ссылка уже есть, то код возвращает ее сокращенный
 // варинт и ошибку storage.ErrConflictData, иначе вызывает метод getNewShortLink
-func (ds *DBStorage) getNewShortLink(ctx context.Context, link string) (string, error) {
+func (ds *DBStorage) checkShortLink(ctx context.Context, prefix, link string) (string, error) {
 	var shortlink string
 	//Данный запрос ищет запись ShortLink для которой Link = link(Оригинальная ссылка),
 	//если запись не найдена вызывается метод checkShortLink
@@ -62,10 +62,11 @@ func (ds *DBStorage) getNewShortLink(ctx context.Context, link string) (string, 
 		link)
 	if err := row.Scan(&shortlink); err != nil {
 		if err == sql.ErrNoRows {
-			shortLink, err := ds.checkShortLink(ctx)
+			shortLink, err := ds.getNewShortLink(ctx)
 			if err != nil {
 				return "", err
 			}
+			shortLink = prefix + "/" + shortLink
 			return shortLink, nil
 		}
 		return "", err
@@ -99,13 +100,12 @@ func (ds *DBStorage) GetData(ctx context.Context, shortLink string) (string, err
 	}
 }
 
-func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, error) {
+func (ds *DBStorage) SetData(ctx context.Context, prefix, originalURL string) (string, error) {
 	ds.sm.Lock()
 	defer ds.sm.Unlock()
 	ctx, cansel := context.WithTimeout(ctx, 5*time.Second)
 	defer cansel()
-
-	shortLink, err := ds.getNewShortLink(ctx, originalURL)
+	shortLink, err := ds.checkShortLink(ctx, prefix, originalURL)
 	if err != nil {
 		return "", err
 	}
@@ -114,9 +114,9 @@ func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, e
 		return "", ctx.Err()
 	default:
 		_, err = ds.DB.ExecContext(ctx,
-			"INSERT INTO links (Link, ShortLink) "+
-				"VALUES ($1, $2)",
-			originalURL, shortLink)
+			"INSERT INTO links (userID, Link, ShortLink) "+
+				"VALUES ($1, $2, $3)",
+			ctx.Value("userID"), originalURL, shortLink)
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgerrcode.UniqueViolation == pgErr.Code {
@@ -143,7 +143,7 @@ func (ds *DBStorage) SetListData(ctx context.Context,
 	respList := make([]models.ResponseAPIBatch, 0)
 
 	for _, StructOriginalURL := range reqList {
-		shortLink, err := ds.getNewShortLink(ctx, StructOriginalURL.OriginalURL)
+		shortLink, err := ds.checkShortLink(ctx, prefix, StructOriginalURL.OriginalURL)
 		if err != nil {
 			tx.Rollback()
 			return nil, err
@@ -154,9 +154,9 @@ func (ds *DBStorage) SetListData(ctx context.Context,
 			return nil, err
 		default:
 			_, err = tx.ExecContext(ctx,
-				"INSERT INTO links (Link, ShortLink) "+
-					"VALUES ($1, $2)",
-				StructOriginalURL.OriginalURL, shortLink)
+				"INSERT INTO links (UserId, Link, ShortLink) "+
+					"VALUES ($1, $2, $3)",
+				ctx.Value("userID"), StructOriginalURL.OriginalURL, shortLink)
 			if err != nil {
 				var pqErr *pgconn.PgError
 				if errors.As(err, &pqErr) && pgerrcode.UniqueViolation == pqErr.Code {
@@ -173,4 +173,22 @@ func (ds *DBStorage) SetListData(ctx context.Context,
 	}
 	tx.Commit()
 	return respList, nil
+}
+
+func (db *DBStorage) GetListData(ctx context.Context) ([]models.ResponseApiUserUrls, error) {
+	var ResponseBody []models.ResponseApiUserUrls
+	rows, err := db.DB.QueryContext(ctx,
+		"SELECT ShortLinkLink, Link FROM links WHERE UserID = $1",
+		ctx.Value("userID"))
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var ElemRespBody models.ResponseApiUserUrls
+		if err = rows.Scan(&ElemRespBody.ShortURL, &ElemRespBody.OriginalURL); err != nil {
+			return nil, err
+		}
+		ResponseBody = append(ResponseBody, ElemRespBody)
+	}
+	return ResponseBody, nil
 }

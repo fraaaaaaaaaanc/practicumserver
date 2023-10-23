@@ -31,7 +31,7 @@ func (ms *MemoryStorage) getNewShortLink() string {
 // Метод который проверят наличие оригинальной ссылки в хранилище,
 // если переданная оригинальная ссылка уже есть, то код возвращает ее сокращенный
 // варинт и ошибку storage.ErrConflictData, иначе вызывает метод getNewShortLink
-func (ms *MemoryStorage) checkShortLink(originalURL string) (string, error) {
+func (ms *MemoryStorage) checkShortLink(prefix, originalURL string) (string, error) {
 	if _, ok := ms.LinkBoolUrls[originalURL]; ok {
 		for shortLink, longLink := range ms.ShortUrls {
 			if longLink == originalURL {
@@ -39,7 +39,8 @@ func (ms *MemoryStorage) checkShortLink(originalURL string) (string, error) {
 			}
 		}
 	}
-	return ms.getNewShortLink(), nil
+	shortLink := prefix + "/" + ms.getNewShortLink()
+	return shortLink, nil
 }
 
 func (ms *MemoryStorage) GetData(ctx context.Context, shortLink string) (string, error) {
@@ -56,7 +57,7 @@ func (ms *MemoryStorage) GetData(ctx context.Context, shortLink string) (string,
 	}
 }
 
-func (ms *MemoryStorage) SetData(ctx context.Context, originalURL string) (string, error) {
+func (ms *MemoryStorage) SetData(ctx context.Context, prefix, originalURL string) (string, error) {
 	ms.sm.Lock()
 	defer ms.sm.Unlock()
 
@@ -64,7 +65,7 @@ func (ms *MemoryStorage) SetData(ctx context.Context, originalURL string) (strin
 	case <-ctx.Done():
 		return "", ctx.Err()
 	default:
-		shortLink, err := ms.checkShortLink(originalURL)
+		shortLink, err := ms.checkShortLink(prefix, originalURL)
 		if _, ok := ms.LinkBoolUrls[originalURL]; !ok {
 			ms.ShortUrls[shortLink] = originalURL
 			ms.ShortBoolUrls[shortLink] = true
@@ -82,7 +83,7 @@ func (ms *MemoryStorage) SetListData(ctx context.Context,
 	respList := make([]models.ResponseAPIBatch, 0)
 
 	for _, structOriginalURL := range reqList {
-		shortLink, err := ms.SetData(ctx, structOriginalURL.OriginalURL)
+		shortLink, err := ms.SetData(ctx, prefix, structOriginalURL.OriginalURL)
 		if err != nil {
 			return nil, err
 		}
@@ -92,10 +93,14 @@ func (ms *MemoryStorage) SetListData(ctx context.Context,
 		default:
 			resp := models.ResponseAPIBatch{
 				CorrelationID: structOriginalURL.CorrelationID,
-				ShortURL:      prefix + "/" + shortLink,
+				ShortURL:      shortLink,
 			}
 			respList = append(respList, resp)
 		}
 	}
 	return respList, nil
+}
+
+func (ms *MemoryStorage) GetListData(ctx context.Context) ([]models.ResponseApiUserUrls, error) {
+	return nil, nil
 }

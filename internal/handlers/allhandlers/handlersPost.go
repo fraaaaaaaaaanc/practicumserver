@@ -1,44 +1,48 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"go.uber.org/zap"
+	"io"
 	"net/http"
 	"net/url"
-	"practicumserver/internal/models"
 	"practicumserver/internal/storage"
 )
 
-// Хендер принимающий POST запрос по адрессу "/api/shorten", в теле которого могут лежать данные в формате JSON
-func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request) {
+// Хендер принимающий POST запрос по адрессу "/"
+func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 	//Проверка адресса
-	if r.URL.String() != "/api/shorten" {
+	if r.URL.String() != "/" {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:",
-			zap.String("reason", "Invalid URL"))
+			zap.String("reason", "Invalid URL or Content-Type"))
 		return
 	}
-
-	//Перенос данных из JSON формата в структуру req
-	var req models.RequestAPIShorten
-	dec := json.NewDecoder(r.Body)
-	if err := dec.Decode(&req); err != nil {
+	//Считывание тела запроса
+	originalURL, err := io.ReadAll(r.Body)
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
 		return
 	}
 
 	//Проверка полученных данных на соотвествие URL
-	if _, err := url.ParseRequestURI(req.OriginalURL); err != nil {
+	if _, err := url.ParseRequestURI(string(originalURL)); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:",
 			zap.String("reason", "The request body isn't a url"))
 		return
 	}
+	defer func() {
+		if err = r.Body.Close(); err != nil {
+			//w.WriteHeader(http.StatusInternalServerError)
+			//h.Log.Error("Error:", zap.Error(err))
+			return
+		}
+	}()
 
 	//Проверка полученных данных на соотвествие URL
-	newShortLink, err := h.Storage.SetData(r.Context(), req.OriginalURL)
+	shortLink, err := h.Storage.SetData(r.Context(), h.prefix, string(originalURL))
 	if err != nil && !errors.Is(err, storage.ErrConflictData) {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
@@ -46,10 +50,7 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 	}
 
 	//Формирование ответа
-	resp := models.ResponseAPIShorten{
-		ShortLink: h.prefix + "/" + newShortLink,
-	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "text/plain")
 	//Метод SetData может вернуть ошибку типа ErrConflictData, это означает что в запросе были
 	//полученны данные которые уже записаны в хранилище, поэтому в таком случае выставдляется статус 409
 	httpStatus := http.StatusCreated
@@ -57,12 +58,5 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 		httpStatus = http.StatusConflict
 	}
 	w.WriteHeader(httpStatus)
-
-	//Перенос данных из структуры в формат JSON
-	enc := json.NewEncoder(w)
-	if err := enc.Encode(resp); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		h.Log.Error("Error:", zap.Error(err))
-		return
-	}
+	_, _ = w.Write([]byte(shortLink))
 }
