@@ -6,20 +6,24 @@ import (
 	"strings"
 )
 
+// Струкутра описывающая данные адреса сервера
 type Hp struct {
 	Host string
 	Port int
 }
+
+// Структура описывающая поля для хранения данных флагов
 type Flags struct {
+	Prefix          string
+	LogLevel        string
+	FileLog         bool
+	ConsoleLog      bool
+	FileStoragePath string
+	DBStorageAdress string
 	Hp
-	Prefix      string
-	LogLevel    string
-	FileLog     bool
-	ConsoleLog  bool
-	FileStorage string
-	DBAdress    string
 }
 
+// Инициализатор структры Flags задающий значения по умолчанию
 func newFlags() Flags {
 	return Flags{
 		Prefix: "http://localhost:8080",
@@ -27,18 +31,19 @@ func newFlags() Flags {
 			Host: "localhost",
 			Port: 8080,
 		},
-		LogLevel: "info",
-		FileLog:  false,
-		//FileStorage: "C:/Users/frant/go/go1.21.0/bin/pkg/mod/github.com/fraaaaaaaaaanc/practicumserver/internal/tmp/short-url-db.json",
-		FileStorage: "/tmp/short-url-db.json",
-		DBAdress:    "host=localhost user=postgres password=1234 dbname=video sslmode=disable",
+		LogLevel:        "info",
+		FileLog:         false,
+		FileStoragePath: "",
+		DBStorageAdress: "",
 	}
 }
 
+// Переопределение метода String для формирования адресса сервера
 func (h *Hp) String() string {
 	return h.Host + ":" + strconv.Itoa(h.Port)
 }
 
+// Переопределение метода Set для проверки адресса сервера и записи данных в структуру Hp
 func (h *Hp) Set(addres string) error {
 	if addres == "" {
 		h.Host = "localhost"

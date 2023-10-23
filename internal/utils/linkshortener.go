@@ -10,7 +10,7 @@ const (
 	alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
-// Метод генерации случайно ссылки
+// Метод генерации случайно сокращенной ссылки
 func LinkShortening() string {
 	number := rand.Uint64()
 	length := len(alphabet)

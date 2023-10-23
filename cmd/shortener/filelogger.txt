@@ -1,3 +1,39 @@
 {"level":"info","ts":1695577201.8786085,"caller":"logger/newlogger.go:53","msg":"Server start","Running server on":"localhost:8080"}
 {"level":"info","ts":1695577253.5627313,"caller":"logger/newlogger.go:53","msg":"Server start","Running server on":"localhost:8080"}
 {"level":"info","ts":1695577267.8277645,"caller":"logger/handlerlog.go:58","msg":"Received request","uri":"/","method":"POST","status":201,"duration":0,"size":26}
+{"level":"info","ts":1697118774.2214286,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697118789.4945393,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1697118921.022344,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1697118928.0403602,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1697118977.8702633,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697118980.4023173,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0.0005124,"size":33}
+{"level":"info","ts":1697119141.7871068,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697119143.5949306,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0.0005132,"size":33}
+{"level":"info","ts":1697119200.0852418,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697119203.0599551,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1697122472.6878688,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697122487.301129,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0.0005176,"size":33}
+{"level":"info","ts":1697122593.278067,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697122594.440818,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0.0005045,"size":33}
+{"level":"info","ts":1697122635.2056847,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697122636.966859,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1697123675.4933994,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697123679.2839906,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1697123690.284094,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1697124628.257129,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697124633.8206716,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1697124746.2017572,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697124750.4312336,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":32}
+{"level":"info","ts":1697124774.0978038,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697124774.7735672,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":32}
+{"level":"info","ts":1697124984.6855378,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697124985.5099614,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1697125023.164624,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697125771.9938354,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697125776.5845103,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":26}
+{"level":"info","ts":1697125826.3173413,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697125829.6840103,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0.000515,"size":33}
+{"level":"info","ts":1697125847.0467796,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697125849.0035744,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":33}
+{"level":"info","ts":1697125879.6370807,"caller":"logger/newlogger.go:52","msg":"Server start","Running server on:":"localhost:8080"}
+{"level":"info","ts":1697125880.968109,"caller":"logger/handlerlog.go:58","msg":"Received request:","uri":"/","method":"POST","status":201,"duration":0,"size":33}

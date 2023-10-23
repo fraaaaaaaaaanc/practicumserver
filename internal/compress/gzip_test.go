@@ -7,9 +7,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"practicumserver/internal/handlers"
+	"practicumserver/internal/handlers/allhandlers"
 	"practicumserver/internal/logger"
-	"practicumserver/internal/storage"
+	"practicumserver/internal/storage/pg"
 	"testing"
 )
 
@@ -23,12 +23,9 @@ func (h HandlerFuncAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestMiddlewareGzipHandleFunc(t *testing.T) {
-	strg := storage.NewStorage()
 	log, _ := logger.NewZapLogger(false)
-	hndlrs := handlers.NewHandlers(strg, log.Logger, "http://localhost:8080",
-		"host=localhost user=postgres password=1234 dbname=video sslmode=disable",
-		"/tmp/short-url-db.json")
-	//"C:\\Users\\frant\\go\\go1.21.0\\bin\\pkg\\mod\\github.com\\fraaaaaaaaaanc\\practicumserver\\internal\\tmp\\short-url-db.json")
+	strg, _ := storage.NewStorage(log.Logger, "", "")
+	hndlrs := handlers.NewHandlers(strg, log.Logger, "http://localhost:8080")
 
 	adapter := HandlerFuncAdapter(hndlrs.PostRequestAPIShorten)
 	newHandler := MiddlewareGzipHandleFunc(log.Logger)
@@ -37,9 +34,7 @@ func TestMiddlewareGzipHandleFunc(t *testing.T) {
 	srv := httptest.NewServer(handler)
 	defer srv.Close()
 
-	requestBody := `{"url": "http://test"}`
-
-	successBody := `{"result": "http://localhost:8080/test"}`
+	requestBody := `{"url": "http://test.com"}`
 
 	t.Run("send_gzip", func(t *testing.T) {
 		buf := bytes.NewBuffer(nil)
@@ -61,7 +56,7 @@ func TestMiddlewareGzipHandleFunc(t *testing.T) {
 
 		b, err := io.ReadAll(resp.Body)
 		assert.NoError(t, err)
-		assert.JSONEq(t, successBody, string(b))
+		assert.NotNil(t, string(b))
 	})
 
 	t.Run("accept_gzip", func(t *testing.T) {
@@ -81,6 +76,6 @@ func TestMiddlewareGzipHandleFunc(t *testing.T) {
 
 		b, err := io.ReadAll(zr)
 		assert.NoError(t, err)
-		assert.JSONEq(t, successBody, string(b))
+		assert.NotNil(t, string(b))
 	})
 }

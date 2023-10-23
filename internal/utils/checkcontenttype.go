@@ -2,6 +2,8 @@ package utils
 
 import "strings"
 
+// Функция принимающая два параметра, contentType полученного запроса и то каким contentType
+// должен быть, в последствии оказалось, что даннаю функци не нужна(
 func ValidContentType(typeCt string, validCtType string) bool {
 	contentType := strings.Split(typeCt, "; ")
 

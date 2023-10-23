@@ -5,6 +5,7 @@ import (
 	"io"
 )
 
+// Функция проверяющая тело запроса на пустоту
 func IsRequestBodyEmpty(body io.Reader) (bool, error) {
 	newBody, err := io.ReadAll(body)
 	if err != nil {
