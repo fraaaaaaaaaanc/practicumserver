@@ -78,7 +78,7 @@ func (fs *FileStorage) SetData(ctx context.Context, originalURL string) (string,
 		if err != nil {
 			return "", err
 		}
-		if userIDStr, ok := ctx.Value("userID").(string); ok {
+		if userIDStr, ok := ctx.Value(models.UserIDKey).(string); ok {
 			fs.NewWrite(userIDStr, originalURL, shortLink)
 			return shortLink, nil
 		}
@@ -97,7 +97,7 @@ func (fs *FileStorage) SetListData(ctx context.Context,
 
 	respList := make([]models.ResponseAPIBatch, 0)
 
-	if userIDStr, ok := ctx.Value("userID").(string); ok {
+	if userIDStr, ok := ctx.Value(models.UserIDKey).(string); ok {
 		for _, structOriginalURL := range reqList {
 			if _, ok := fs.LinkBoolUrls[structOriginalURL.OriginalURL]; !ok {
 				shortLink, err := fs.MemoryStorage.SetData(ctx, structOriginalURL.OriginalURL)

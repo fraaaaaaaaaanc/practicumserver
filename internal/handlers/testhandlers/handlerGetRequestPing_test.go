@@ -13,6 +13,16 @@ import (
 
 func TestGetRequestPing(t *testing.T) {
 	log, _ := logger.NewZapLogger(false)
+
+	newCookie := &http.Cookie{
+		Name: "Authorization",
+		Value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTgxMTI0ODksIlVzZXJJRCI6IktacjlENG01bkJuY05uMUNQ" +
+			"M08xbHc9PSJ9.g0vISaj4K1rP4V83AOD8Q4y4_0gsZ6Dwci1eZ72jM54",
+		Path:     "/",
+		MaxAge:   7200,
+		HttpOnly: true,
+	}
+
 	type requestData struct {
 		dbAdress string
 		adress   string
@@ -20,6 +30,7 @@ func TestGetRequestPing(t *testing.T) {
 	tests := []struct {
 		name       string
 		statusCode int
+		cookie     *http.Cookie
 		requestData
 	}{
 		//{
@@ -44,6 +55,7 @@ func TestGetRequestPing(t *testing.T) {
 			name: "test sending a request to the address \"http://localhost:8080/ping\", while initializing " +
 				"NewHandlers with an empty dbadress parameter, should return Status Code 200",
 			statusCode: http.StatusBadRequest,
+			cookie:     newCookie,
 			requestData: requestData{
 				dbAdress: "",
 				adress:   "/ping",

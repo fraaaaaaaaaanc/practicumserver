@@ -1,5 +1,9 @@
 package models
 
+type ContextKey string
+
+var UserIDKey ContextKey = "userID"
+
 // Стркуры реализующие формы запросов и ответов при POST запросах к адрессу /api/shorten
 type (
 	RequestAPIShorten struct {

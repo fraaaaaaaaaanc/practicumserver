@@ -17,14 +17,24 @@ func TestGetRequest(t *testing.T) {
 	strg, _ := storage.NewStorage(log.Logger, "", "")
 	hndlrs := handlers.NewHandlers(strg, log.Logger, "http://localhost:8080")
 
+	newCookie := &http.Cookie{
+		Name: "Authorization",
+		Value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTgxMTI0ODksIlVzZXJJRCI6IktacjlENG01bkJuY05uMUNQ" +
+			"M08xbHc9PSJ9.g0vISaj4K1rP4V83AOD8Q4y4_0gsZ6Dwci1eZ72jM54",
+		Path:     "/",
+		MaxAge:   7200,
+		HttpOnly: true,
+	}
+
 	type wantGet struct {
 		statusCode int
 		Location   string
 	}
 	tests := []struct {
+		adress string
 		name   string
 		want   wantGet
-		adress string
+		cookie *http.Cookie
 	}{
 		{
 			name: "test sending a request to the address \"http://localhost:8080 /\" , should return Status Code 400",
@@ -33,6 +43,7 @@ func TestGetRequest(t *testing.T) {
 				Location:   "",
 			},
 			adress: "/",
+			cookie: newCookie,
 		},
 		{
 			name: "test sending a request to the address \"http://localhost:8080/word \" despite the fact that the " +
@@ -42,6 +53,7 @@ func TestGetRequest(t *testing.T) {
 				Location:   "",
 			},
 			adress: "/word",
+			cookie: newCookie,
 		},
 		{
 			name: "test sending a request to the address \"http://localhost:8080/test \" while the abbreviated test " +
@@ -51,6 +63,7 @@ func TestGetRequest(t *testing.T) {
 				Location:   "http://test",
 			},
 			adress: "/test",
+			cookie: newCookie,
 		},
 	}
 	for _, tt := range tests {

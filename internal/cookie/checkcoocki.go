@@ -1,4 +1,4 @@
-package coockie
+package cookie
 
 import (
 	"context"
@@ -10,12 +10,13 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	handlers "practicumserver/internal/handlers/allhandlers"
+	"practicumserver/internal/models"
 	"time"
 )
 
-const SECRET_KEY = "key"
-const TOKEN_EXP = time.Hour * 6
-const MAX_LEN_USER_ID = 16
+const SecretKey = "key"
+const TokenExp = time.Hour * 6
+const MaxLenUserID = 16
 
 type Claims struct {
 	jwt.RegisteredClaims
@@ -23,7 +24,7 @@ type Claims struct {
 }
 
 func NewUserID(ctx context.Context, hndlrs *handlers.Handlers) (string, error) {
-	userIDbytes := make([]byte, MAX_LEN_USER_ID)
+	userIDbytes := make([]byte, MaxLenUserID)
 	for {
 		_, err := rand.Read(userIDbytes)
 		if err != nil {
@@ -41,14 +42,14 @@ func NewUserID(ctx context.Context, hndlrs *handlers.Handlers) (string, error) {
 	}
 }
 
-func BuildJWTString(ctx context.Context, hndlrs *handlers.Handlers, userID string) (string, error) {
+func BuildJWTString(userID string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_EXP)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExp)),
 		},
 		UserID: userID,
 	})
-	tokenString, err := token.SignedString([]byte(SECRET_KEY))
+	tokenString, err := token.SignedString([]byte(SecretKey))
 	if err != nil {
 		return "", err
 	}
@@ -58,7 +59,7 @@ func BuildJWTString(ctx context.Context, hndlrs *handlers.Handlers, userID strin
 func GetUserID(tokenString string) (string, error) {
 	var claims Claims
 	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SECRET_KEY), nil
+		return []byte(SecretKey), nil
 	})
 	if err != nil {
 		return "", err
@@ -75,14 +76,13 @@ func MiddlewareCheckCoockie(log *zap.Logger, hndlrs *handlers.Handlers) func(h h
 			var userID string
 			cookie, err := r.Cookie("Authorization")
 			if err != nil {
-				fmt.Println(err)
 				userID, err = NewUserID(r.Context(), hndlrs)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					log.Error("Error:", zap.Error(err))
 					return
 				}
-				tokenString, err := BuildJWTString(r.Context(), hndlrs, userID)
+				tokenString, err := BuildJWTString(userID)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					log.Error("Error:", zap.Error(err))
@@ -104,7 +104,7 @@ func MiddlewareCheckCoockie(log *zap.Logger, hndlrs *handlers.Handlers) func(h h
 					return
 				}
 			}
-			ctx := context.WithValue(r.Context(), "userID", userID)
+			ctx := context.WithValue(r.Context(), models.UserIDKey, userID)
 			r = r.WithContext(ctx)
 
 			h.ServeHTTP(w, r)

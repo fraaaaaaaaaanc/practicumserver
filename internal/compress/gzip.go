@@ -2,9 +2,11 @@ package compress
 
 import (
 	"compress/gzip"
+	"fmt"
 	"go.uber.org/zap"
 	"io"
 	"net/http"
+	"practicumserver/internal/models"
 )
 
 // Струкутра для хранения обычного и сжатого ответа хендлера
@@ -81,6 +83,7 @@ func (c *compressReader) Close() error {
 func MiddlewareGzipHandleFunc(logger *zap.Logger) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Println(r.Context().Value(models.UserIDKey))
 			var cw *compressWriter
 			var cr *compressReader
 			ow := w

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"practicumserver/internal/models"
@@ -178,7 +177,6 @@ func (ds *DBStorage) SetListData(ctx context.Context,
 
 func (ds *DBStorage) GetListData(ctx context.Context, prefix string) ([]models.ResponseAPIUserUrls, error) {
 	var resp []models.ResponseAPIUserUrls
-	fmt.Println(ctx.Value("userID"))
 	rows, err := ds.DB.QueryContext(ctx,
 		"SELECT ShortLink, Link FROM links WHERE UserID = $1",
 		ctx.Value("userID"))

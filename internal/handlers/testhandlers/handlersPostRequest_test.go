@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"net/http/httptest"
 	"practicumserver/internal/handlers/allhandlers"
 	"practicumserver/internal/logger"
+	"practicumserver/internal/models"
 	"practicumserver/internal/storage/pg"
 	"strings"
 	"testing"
@@ -19,6 +21,15 @@ func TestPostRequest(t *testing.T) {
 	strg, _ := storage.NewStorage(log.Logger, "", "")
 	hndlrs := handlers.NewHandlers(strg, log.Logger, "http://localhost:8080")
 
+	newCookie := &http.Cookie{
+		Name: "Authorization",
+		Value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTgxMTI0ODksIlVzZXJJRCI6IktacjlENG01bkJuY05uMUNQ" +
+			"M08xbHc9PSJ9.g0vISaj4K1rP4V83AOD8Q4y4_0gsZ6Dwci1eZ72jM54",
+		Path:     "/",
+		MaxAge:   7200,
+		HttpOnly: true,
+	}
+
 	type wantPost struct {
 		statusCode  int
 		contentType string
@@ -26,6 +37,7 @@ func TestPostRequest(t *testing.T) {
 	type request struct {
 		body        string
 		contentType string
+		cookie      *http.Cookie
 	}
 	tests := []struct {
 		name    string
@@ -43,6 +55,7 @@ func TestPostRequest(t *testing.T) {
 			request: request{
 				body:        "",
 				contentType: "text/plain; charset=utf-8",
+				cookie:      newCookie,
 			},
 			url: "/",
 		},
@@ -56,6 +69,7 @@ func TestPostRequest(t *testing.T) {
 			request: request{
 				body:        "notLink",
 				contentType: "text/plain; charset=utf-8",
+				cookie:      newCookie,
 			},
 			url: "/",
 		},
@@ -69,6 +83,7 @@ func TestPostRequest(t *testing.T) {
 			request: request{
 				body:        "http://newTest",
 				contentType: "text/plain; charset=utf-8",
+				cookie:      newCookie,
 			},
 			url: "/",
 		},
@@ -82,6 +97,7 @@ func TestPostRequest(t *testing.T) {
 			request: request{
 				body:        "http://newTest",
 				contentType: "text/plain; charset=utf-8",
+				cookie:      newCookie,
 			},
 			url: "/",
 		},
@@ -90,6 +106,8 @@ func TestPostRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, tt.url, strings.NewReader(tt.request.body))
 			request.Header.Set("Content-Type", tt.request.contentType)
+			ctx := context.WithValue(request.Context(), models.UserIDKey, "1234")
+			request = request.WithContext(ctx)
 			w := httptest.NewRecorder()
 			hndlrs.PostRequest(w, request)
 

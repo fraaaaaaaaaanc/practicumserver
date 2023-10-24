@@ -66,7 +66,7 @@ func (ms *MemoryStorage) SetData(ctx context.Context, originalURL string) (strin
 	if err != nil {
 		return shortLink, err
 	}
-	userID := ctx.Value("userID")
+	userID := ctx.Value(models.UserIDKey)
 	if userIDStr, ok := userID.(string); ok {
 		if _, ok = ms.LinkBoolUrls[originalURL]; !ok {
 			ms.ShortUrls[shortLink] = originalURL
@@ -94,23 +94,18 @@ func (ms *MemoryStorage) SetListData(ctx context.Context,
 		if err != nil {
 			return nil, err
 		}
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-			resp := models.ResponseAPIBatch{
-				CorrelationID: structOriginalURL.CorrelationID,
-				ShortURL:      prefix + "/" + shortLink,
-			}
-			respList = append(respList, resp)
+		resp := models.ResponseAPIBatch{
+			CorrelationID: structOriginalURL.CorrelationID,
+			ShortURL:      prefix + "/" + shortLink,
 		}
+		respList = append(respList, resp)
 	}
 	return respList, nil
 }
 
 func (ms *MemoryStorage) GetListData(ctx context.Context, prefix string) ([]models.ResponseAPIUserUrls, error) {
 	var resp []models.ResponseAPIUserUrls
-	userID := ctx.Value("userID")
+	userID := ctx.Value(models.UserIDKey)
 	if userIDStr, ok := userID.(string); ok {
 		for key, elem := range ms.UserIDUrls[userIDStr] {
 			oneResp := models.ResponseAPIUserUrls{

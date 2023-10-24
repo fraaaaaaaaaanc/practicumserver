@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	"practicumserver/internal/compress"
-	"practicumserver/internal/coocki"
+	coockie "practicumserver/internal/cookie"
 	"practicumserver/internal/handlers/allhandlers"
 	"practicumserver/internal/logger"
 )
@@ -14,8 +14,8 @@ func Router(hndlrs *handlers.Handlers, log *zap.Logger) (chi.Router, error) {
 	//Создание объекта *Mux
 	r := chi.NewRouter()
 
-	r.Use(logger.MiddlewareLogHandleFunc(log), compress.MiddlewareGzipHandleFunc(log),
-		coockie.MiddlewareCheckCoockie(log, hndlrs))
+	r.Use(coockie.MiddlewareCheckCoockie(log, hndlrs), logger.MiddlewareLogHandleFunc(log),
+		compress.MiddlewareGzipHandleFunc(log))
 	r.Get("/{id:[a-zA-Z0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		//Хендлер для получения оригинального URL по сокращенному
 		hndlrs.GetRequest(w, r)

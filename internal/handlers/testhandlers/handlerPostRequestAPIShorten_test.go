@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"net/http/httptest"
 	"practicumserver/internal/handlers/allhandlers"
 	"practicumserver/internal/logger"
+	"practicumserver/internal/models"
 	"practicumserver/internal/storage/pg"
 	"strings"
 	"testing"
@@ -18,6 +20,15 @@ func TestPostRequestApiShorten(t *testing.T) {
 	strg, _ := storage.NewStorage(log.Logger, "", "")
 	hndlrs := handlers.NewHandlers(strg, log.Logger, "http://localhost:8080")
 
+	newCookie := &http.Cookie{
+		Name: "Authorization",
+		Value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTgxMTI0ODksIlVzZXJJRCI6IktacjlENG01bkJuY05uMUNQ" +
+			"M08xbHc9PSJ9.g0vISaj4K1rP4V83AOD8Q4y4_0gsZ6Dwci1eZ72jM54",
+		Path:     "/",
+		MaxAge:   7200,
+		HttpOnly: true,
+	}
+
 	type wantPost struct {
 		expectedCode int
 		expectCt     string
@@ -27,6 +38,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 		body        string
 		contentType string
 		url         string
+		cookie      *http.Cookie
 	}
 	tests := []struct {
 		name string
@@ -41,6 +53,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        "",
 				contentType: "application/json; charset=utf-8",
 				url:         "http://localhost:8080/api/shorten",
+				cookie:      newCookie,
 			},
 			wantPost: wantPost{
 				expectedCode: http.StatusBadRequest,
@@ -55,6 +68,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        `http:localhost"`,
 				contentType: "application/json; charset=utf-8",
 				url:         "http://localhost:8080/api/shorten",
+				cookie:      newCookie,
 			},
 			wantPost: wantPost{
 				expectedCode: http.StatusBadRequest,
@@ -70,6 +84,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        `{"url": 1}`,
 				contentType: "application/json; charset=utf-8",
 				url:         "http://localhost:8080/api/shorten",
+				cookie:      newCookie,
 			},
 			wantPost: wantPost{
 				expectedCode: http.StatusBadRequest,
@@ -84,6 +99,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        `{"url": Hello}`,
 				contentType: "application/json; charset=utf-8",
 				url:         "http://localhost:8080/api/shorten",
+				cookie:      newCookie,
 			},
 			wantPost: wantPost{
 				expectedCode: http.StatusBadRequest,
@@ -98,6 +114,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        `{"url":"http://newTest"}`,
 				contentType: "application/json",
 				url:         "http://localhost:8080/api/shorten",
+				cookie:      newCookie,
 			},
 			wantPost: wantPost{
 				expectedCode: http.StatusCreated,
@@ -112,6 +129,7 @@ func TestPostRequestApiShorten(t *testing.T) {
 				body:        `{"url":"http://newTest"}`,
 				contentType: "application/json",
 				url:         "http://localhost:8080/api/shorten",
+				cookie:      newCookie,
 			},
 			wantPost: wantPost{
 				expectedCode: http.StatusConflict,
@@ -123,6 +141,8 @@ func TestPostRequestApiShorten(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, "/api/shorten", strings.NewReader(tt.request.body))
 			request.Header.Set("Content-Type", tt.request.contentType)
+			ctx := context.WithValue(request.Context(), models.UserIDKey, "1234")
+			request = request.WithContext(ctx)
 			w := httptest.NewRecorder()
 			hndlrs.PostRequestAPIShorten(w, request)
 
