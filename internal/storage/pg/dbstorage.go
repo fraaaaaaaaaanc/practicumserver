@@ -116,7 +116,7 @@ func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, e
 		_, err = ds.DB.ExecContext(ctx,
 			"INSERT INTO links (UserID, Link, ShortLink) "+
 				"VALUES ($1, $2, $3)",
-			ctx.Value("userID"), originalURL, shortLink)
+			ctx.Value(models.UserIDKey), originalURL, shortLink)
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgerrcode.UniqueViolation == pgErr.Code {
@@ -156,7 +156,7 @@ func (ds *DBStorage) SetListData(ctx context.Context,
 			_, err = tx.ExecContext(ctx,
 				"INSERT INTO links (UserID, Link, ShortLink) "+
 					"VALUES ($1, $2, $3)",
-				ctx.Value("userID"), StructOriginalURL.OriginalURL, shortLink)
+				ctx.Value(models.UserIDKey), StructOriginalURL.OriginalURL, shortLink)
 			if err != nil {
 				var pqErr *pgconn.PgError
 				if errors.As(err, &pqErr) && pgerrcode.UniqueViolation == pqErr.Code {
@@ -180,6 +180,8 @@ func (ds *DBStorage) GetListData(ctx context.Context, prefix string) ([]models.R
 	rows, err := ds.DB.QueryContext(ctx,
 		"SELECT ShortLink, Link FROM links WHERE UserID = $1",
 		ctx.Value("userID"))
+	defer rows.Close()
+
 	if err != nil {
 		return nil, err
 	}
@@ -190,6 +192,10 @@ func (ds *DBStorage) GetListData(ctx context.Context, prefix string) ([]models.R
 		}
 		oneResp.ShortURL = prefix + "/" + oneResp.ShortURL
 		resp = append(resp, oneResp)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
 	}
 	return resp, nil
 }

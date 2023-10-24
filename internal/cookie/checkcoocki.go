@@ -65,7 +65,7 @@ func GetUserID(tokenString string) (string, error) {
 		return "", err
 	}
 	if !token.Valid {
-		return "", errors.New("Token is not valid")
+		return "", errors.New("token is not valid")
 	}
 	return claims.UserID, nil
 }
