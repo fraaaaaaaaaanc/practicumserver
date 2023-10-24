@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"errors"
+	"fmt"
 	"practicumserver/internal/models"
 	"practicumserver/internal/storage"
 	"practicumserver/internal/utils"
@@ -106,6 +107,7 @@ func (ms *MemoryStorage) SetListData(ctx context.Context,
 func (ms *MemoryStorage) GetListData(ctx context.Context, prefix string) ([]models.ResponseAPIUserUrls, error) {
 	var resp []models.ResponseAPIUserUrls
 	userID := ctx.Value(models.UserIDKey)
+	fmt.Println(userID)
 	if userIDStr, ok := userID.(string); ok {
 		for key, elem := range ms.UserIDUrls[userIDStr] {
 			oneResp := models.ResponseAPIUserUrls{
