@@ -25,7 +25,6 @@ func (h *Handlers) GetRequestAPIUserUrls(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	enc := json.NewEncoder(w)
 	if err = enc.Encode(resp); err != nil {
