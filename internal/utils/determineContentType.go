@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 )
 
+// Функция которая вызывалась в MiddlewareGzipHandleFunc, для определения формата полученных данных,
+// так как запрос в тестах прилетает с contentType-ом application/x-gzip, в последствии оказалось,
+// что так делать не нужно
 func IsJSON(data []byte) bool {
 	var js interface{}
 	if err := json.Unmarshal(data, &js); err != nil {

@@ -7,16 +7,21 @@ import (
 	"os"
 )
 
+// Интерфейс который должен быть реализован логером
 type Logger interface {
 	Info(msg string, fields ...zapcore.Field)
 	Error(msg string, fields ...zapcore.Field)
 }
 
+// Структура логера, имеющая поле лог и указатель на файл в который будут записаны логи
 type ZapLogger struct {
 	Logger *zap.Logger
 	File   *os.File
 }
 
+// Инициализатор логера, данный метод принимает булевый параметр FileLog, значение которого получается
+// при парсинге флагов, если его значение будет true, то будет создан экземпляр логера который будет записыват логи
+// не только в консоль, но и в файл, иначе логи будет записыватсья только в консоль
 func NewZapLogger(FileLog bool) (*ZapLogger, error) {
 	var cores []zapcore.Core
 	var file *os.File
@@ -48,6 +53,7 @@ func NewZapLogger(FileLog bool) (*ZapLogger, error) {
 	return &ZapLogger{Logger: logger, File: file}, nil
 }
 
+// Переопределение методов Info и Error
 func (z *ZapLogger) Info(msg string, fields ...zapcore.Field) {
 	z.Logger.Info(msg, fields...)
 }
