@@ -1,6 +1,5 @@
 package compress
 
-//
 //import (
 //	"bytes"
 //	"compress/gzip"

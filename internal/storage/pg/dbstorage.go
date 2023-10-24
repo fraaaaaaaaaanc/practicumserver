@@ -180,11 +180,11 @@ func (ds *DBStorage) GetListData(ctx context.Context, prefix string) ([]models.R
 	rows, err := ds.DB.QueryContext(ctx,
 		"SELECT ShortLink, Link FROM links WHERE UserID = $1",
 		ctx.Value(models.UserIDKey))
-	defer rows.Close()
-
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
+
 	for rows.Next() {
 		var oneResp models.ResponseAPIUserUrls
 		if err = rows.Scan(&oneResp.ShortURL, &oneResp.OriginalURL); err != nil {
