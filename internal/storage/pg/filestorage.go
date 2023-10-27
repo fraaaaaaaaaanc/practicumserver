@@ -55,7 +55,7 @@ func (fs *FileStorage) FullWrite() error {
 				OriginalURL: originalURL,
 				DeletedFlag: false,
 			}
-			if _, ok := fs.DeletedURl[shortLink]; ok {
+			if _, ok := fs.DeletedURL[shortLink]; ok {
 				URLData.DeletedFlag = true
 			}
 			if err := json.NewEncoder(file).Encode(URLData); err != nil {
@@ -93,7 +93,7 @@ func (fs *FileStorage) SetFromFileData(fileData *models.FileData) {
 	if !fileData.DeletedFlag {
 		fs.ShortUrls[fileData.ShortURL] = fileData.OriginalURL
 	} else {
-		fs.DeletedURl[fileData.ShortURL] = fileData.OriginalURL
+		fs.DeletedURL[fileData.ShortURL] = fileData.OriginalURL
 	}
 	if fs.UserIDUrls[fileData.UserID] == nil {
 		fs.UserIDUrls[fileData.UserID] = make(map[string]string)
