@@ -81,7 +81,7 @@ func NewStorage(log *zap.Logger,
 		UserIDUrls: map[string]map[string]string{
 			"test": {"test": "http://test"},
 		},
-		DeletedURl: map[string]string{
+		DeletedURL: map[string]string{
 			"test": "http://test",
 		},
 	}
