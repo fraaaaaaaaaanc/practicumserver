@@ -95,7 +95,7 @@ func (ds *DBStorage) GetData(ctx context.Context, shortLink string) (string, err
 			}
 			return "", err
 		}
-		if getResp.deletedFlag == true {
+		if getResp.deletedFlag {
 			return "", models.ErrDeletedData
 		}
 		return getResp.originalURL, nil

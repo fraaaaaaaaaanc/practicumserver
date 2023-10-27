@@ -3,7 +3,6 @@ package pgstorage
 import (
 	"context"
 	"errors"
-	"fmt"
 	"practicumserver/internal/models"
 	"practicumserver/internal/utils"
 )
@@ -16,7 +15,7 @@ type MemoryStorage struct {
 	LinkBoolUrls  map[string]bool
 	ShortUrls     map[string]string
 	UserIDUrls    map[string]map[string]string
-	DeletedURl    map[string]string
+	DeletedURL    map[string]string
 	StorageParam
 }
 
@@ -54,7 +53,7 @@ func (ms *MemoryStorage) GetData(ctx context.Context, shortLink string) (string,
 	default:
 		if _, ok := ms.ShortUrls[shortLink]; ok {
 			return ms.ShortUrls[shortLink], nil
-		} else if _, ok := ms.DeletedURl[shortLink]; ok {
+		} else if _, ok := ms.DeletedURL[shortLink]; ok {
 			return "", models.ErrDeletedData
 		}
 		return "", models.ErrNoRows
@@ -130,10 +129,8 @@ func (ms *MemoryStorage) UpdateDeletedFlag(ctx context.Context, userIDList, shor
 	var idx int
 	for _, shortLink := range shortLinkList {
 		if _, ok := ms.UserIDUrls[userIDList[idx]][shortLink]; ok {
-			ms.DeletedURl[shortLink] = ms.ShortUrls[shortLink]
-			fmt.Println(ms.ShortUrls)
+			ms.DeletedURL[shortLink] = ms.ShortUrls[shortLink]
 			delete(ms.ShortUrls, shortLink)
-			fmt.Println(ms.ShortUrls)
 		}
 		idx++
 	}
