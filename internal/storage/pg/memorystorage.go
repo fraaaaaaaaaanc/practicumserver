@@ -1,10 +1,10 @@
-package storage
+package pgstorage
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"practicumserver/internal/models"
-	"practicumserver/internal/storage"
 	"practicumserver/internal/utils"
 )
 
@@ -16,6 +16,7 @@ type MemoryStorage struct {
 	LinkBoolUrls  map[string]bool
 	ShortUrls     map[string]string
 	UserIDUrls    map[string]map[string]string
+	DeletedURl    map[string]string
 	StorageParam
 }
 
@@ -37,7 +38,7 @@ func (ms *MemoryStorage) checkShortLink(originalURL string) (string, error) {
 	if _, ok := ms.LinkBoolUrls[originalURL]; ok {
 		for shortLink, longLink := range ms.ShortUrls {
 			if longLink == originalURL {
-				return shortLink, storage.ErrConflictData
+				return shortLink, models.ErrConflictData
 			}
 		}
 	}
@@ -45,22 +46,24 @@ func (ms *MemoryStorage) checkShortLink(originalURL string) (string, error) {
 }
 
 func (ms *MemoryStorage) GetData(ctx context.Context, shortLink string) (string, error) {
-	ms.sm.Lock()
-	defer ms.sm.Unlock()
+	ms.Sm.Lock()
+	defer ms.Sm.Unlock()
 	select {
 	case <-ctx.Done():
 		return "", ctx.Err()
 	default:
-		if _, ok := ms.ShortBoolUrls[shortLink]; ok {
+		if _, ok := ms.ShortUrls[shortLink]; ok {
 			return ms.ShortUrls[shortLink], nil
+		} else if _, ok := ms.DeletedURl[shortLink]; ok {
+			return "", models.ErrDeletedData
 		}
-		return "", nil
+		return "", models.ErrNoRows
 	}
 }
 
 func (ms *MemoryStorage) SetData(ctx context.Context, originalURL string) (string, error) {
-	ms.sm.Lock()
-	defer ms.sm.Unlock()
+	ms.Sm.Lock()
+	defer ms.Sm.Unlock()
 
 	shortLink, err := ms.checkShortLink(originalURL)
 	if err != nil {
@@ -84,8 +87,6 @@ func (ms *MemoryStorage) SetData(ctx context.Context, originalURL string) (strin
 
 func (ms *MemoryStorage) SetListData(ctx context.Context,
 	reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error) {
-	//ms.sm.Lock()
-	//defer ms.sm.Unlock()
 
 	respList := make([]models.ResponseAPIBatch, 0)
 
@@ -123,4 +124,18 @@ func (ms *MemoryStorage) CheckUserID(ctx context.Context, userID string) (bool, 
 		return true, nil
 	}
 	return false, nil
+}
+
+func (ms *MemoryStorage) UpdateDeletedFlag(ctx context.Context, userIDList, shortLinkList []string) error {
+	var idx int
+	for _, shortLink := range shortLinkList {
+		if _, ok := ms.UserIDUrls[userIDList[idx]][shortLink]; ok {
+			ms.DeletedURl[shortLink] = ms.ShortUrls[shortLink]
+			fmt.Println(ms.ShortUrls)
+			delete(ms.ShortUrls, shortLink)
+			fmt.Println(ms.ShortUrls)
+		}
+		idx++
+	}
+	return nil
 }

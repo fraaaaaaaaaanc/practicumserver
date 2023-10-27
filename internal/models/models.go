@@ -4,6 +4,8 @@ type ContextKey string
 
 var UserIDKey ContextKey = "userID"
 
+type DeleteURLList []string
+
 // Стркуры реализующие формы запросов и ответов при POST запросах к адрессу /api/shorten
 type (
 	RequestAPIShorten struct {
@@ -37,4 +39,10 @@ type FileData struct {
 	UserID      string `json:"user_id"`
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
+	DeletedFlag bool   `json:"deleted_flag"`
+}
+
+type DeleteURL struct {
+	UserID   string
+	ShortURL string
 }

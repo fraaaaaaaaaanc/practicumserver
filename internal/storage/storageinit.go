@@ -5,27 +5,21 @@ import (
 	"database/sql"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
-	"practicumserver/internal/storage"
+	"practicumserver/internal/storage/pg"
 	"sync"
 )
-
-// Структура с ощими элементами для каждого storage
-type StorageParam struct {
-	log *zap.Logger
-	sm  *sync.Mutex
-}
 
 // Функция NewStorage принимает параметры log(для логирования), и две булевые переменные
 // полученные при парсинге флагов. Функция проверяет эти флаги, если тот или иной флга
 // принимает значени true, то функция создает объект storage того типа, реализующий
 // интерфейс storage.StorageMock
 func NewStorage(log *zap.Logger,
-	DBStorageAdress, FileStoragePath string) (storage.StorageMock, error) {
+	DBStorageAdress, FileStoragePath string) (StorageMock, error) {
 	//Cоздание структуры с общими элементами для кажлого storage
 	var sm sync.Mutex
-	strg := StorageParam{
-		log: log,
-		sm:  &sm,
+	strg := pgstorage.StorageParam{
+		Log: log,
+		Sm:  &sm,
 	}
 	//Создание storage для работы с БД
 	if DBStorageAdress != "" {
@@ -54,7 +48,8 @@ func NewStorage(log *zap.Logger,
 						id SERIAL PRIMARY KEY, 
 						UserID VARCHAR(24) NOT NULL DEFAULT '', 
 						Link VARCHAR(250) NOT NULL DEFAULT '' UNIQUE,
-						ShortLink VARCHAR(250) NOT NULL DEFAULT '' UNIQUE
+						ShortLink VARCHAR(250) NOT NULL DEFAULT '' UNIQUE,
+						DeletedFlag BOOLEAN NOT NULL DEFAULT false
 					);
 				END IF;
 			END $$;
@@ -62,7 +57,7 @@ func NewStorage(log *zap.Logger,
 		if err != nil {
 			return nil, err
 		}
-		return &DBStorage{
+		return &pgstorage.DBStorage{
 			DB:           db,
 			StorageParam: strg,
 		}, nil
@@ -72,7 +67,7 @@ func NewStorage(log *zap.Logger,
 	//т.к. он является анонимным полем второго
 	//При создании этого storage сразу создаются некоторе поля в map-ах
 	//для тестирования
-	memoryStorage := &MemoryStorage{
+	memoryStorage := &pgstorage.MemoryStorage{
 		StorageParam: strg,
 		ShortBoolUrls: map[string]bool{
 			"test": true,
@@ -86,10 +81,13 @@ func NewStorage(log *zap.Logger,
 		UserIDUrls: map[string]map[string]string{
 			"test": {"test": "http://test"},
 		},
+		DeletedURl: map[string]string{
+			"test": "http://test",
+		},
 	}
 	//Создание storage для хранения данных в файле
 	if FileStoragePath != "" {
-		fs := &FileStorage{
+		fs := &pgstorage.FileStorage{
 			MemoryStorage: memoryStorage,
 			FileName:      FileStoragePath,
 		}

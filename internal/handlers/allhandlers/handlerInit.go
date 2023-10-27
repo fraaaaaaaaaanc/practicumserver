@@ -3,6 +3,7 @@ package handlers
 import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
+	"practicumserver/internal/models"
 	"practicumserver/internal/storage"
 )
 
@@ -10,6 +11,7 @@ import (
 type Handlers struct {
 	Storage storage.StorageMock
 	Log     *zap.Logger
+	DelCn   chan *models.DeleteURL
 	prefix  string
 }
 
@@ -19,6 +21,7 @@ func NewHandlers(strg storage.StorageMock, log *zap.Logger, prefix string) *Hand
 	return &Handlers{
 		Storage: strg,
 		Log:     log,
+		DelCn:   make(chan *models.DeleteURL, 128),
 		prefix:  prefix,
 	}
 }

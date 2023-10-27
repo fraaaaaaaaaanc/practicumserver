@@ -13,7 +13,7 @@ import (
 	"practicumserver/internal/cookie"
 	handlers "practicumserver/internal/handlers/allhandlers"
 	"practicumserver/internal/logger"
-	storage "practicumserver/internal/storage/pg"
+	"practicumserver/internal/storage"
 	"testing"
 )
 

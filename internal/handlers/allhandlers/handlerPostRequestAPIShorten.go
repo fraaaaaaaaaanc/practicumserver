@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"practicumserver/internal/models"
-	"practicumserver/internal/storage"
 )
 
 // Хендер принимающий POST запрос по адрессу "/api/shorten", в теле которого могут лежать данные в формате JSON
@@ -39,7 +38,7 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 
 	//Проверка полученных данных на соотвествие URL
 	newShortLink, err := h.Storage.SetData(r.Context(), req.OriginalURL)
-	if err != nil && !errors.Is(err, storage.ErrConflictData) {
+	if err != nil && !errors.Is(err, models.ErrConflictData) {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
 		return
@@ -53,7 +52,7 @@ func (h *Handlers) PostRequestAPIShorten(w http.ResponseWriter, r *http.Request)
 	//Метод SetData может вернуть ошибку типа ErrConflictData, это означает что в запросе были
 	//полученны данные которые уже записаны в хранилище, поэтому в таком случае выставдляется статус 409
 	httpStatus := http.StatusCreated
-	if errors.Is(err, storage.ErrConflictData) {
+	if errors.Is(err, models.ErrConflictData) {
 		httpStatus = http.StatusConflict
 	}
 	w.WriteHeader(httpStatus)

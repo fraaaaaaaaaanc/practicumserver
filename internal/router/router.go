@@ -39,6 +39,7 @@ func Router(hndlrs *handlers.Handlers, log *zap.Logger) (chi.Router, error) {
 		//и обрабатывать запросы в формате JSON пачками
 		hndlrs.PostRequestAPIShortenBatch(w, r)
 	})
+	r.Delete("/api/user/urls", hndlrs.DeleteRequestAPIUserUrls)
 
 	return r, nil
 }

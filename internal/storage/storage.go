@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"errors"
 	"practicumserver/internal/models"
 )
 
@@ -23,7 +22,5 @@ type StorageMock interface {
 	SetListData(ctx context.Context, reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error)
 	GetListData(ctx context.Context, prefix string) ([]models.ResponseAPIUserUrls, error)
 	CheckUserID(ctx context.Context, userID string) (bool, error)
+	UpdateDeletedFlag(ctx context.Context, userIDList, shortLinkList []string) error
 }
-
-// Ошибка сообщающая о конфликте данных в хранилище
-var ErrConflictData = errors.New("data conflict, the resulting url already exists in the storage")

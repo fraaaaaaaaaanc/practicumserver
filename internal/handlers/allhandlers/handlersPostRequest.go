@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"practicumserver/internal/storage"
+	"practicumserver/internal/models"
 )
 
 // Хендер принимающий POST запрос по адрессу "/"
@@ -44,7 +44,7 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 
 	//Проверка полученных данных на соотвествие URL
 	shortLink, err := h.Storage.SetData(r.Context(), string(originalURL))
-	if err != nil && !errors.Is(err, storage.ErrConflictData) {
+	if err != nil && !errors.Is(err, models.ErrConflictData) {
 		w.WriteHeader(http.StatusBadRequest)
 		h.Log.Error("Error:", zap.Error(err))
 		return
@@ -55,7 +55,7 @@ func (h *Handlers) PostRequest(w http.ResponseWriter, r *http.Request) {
 	//Метод SetData может вернуть ошибку типа ErrConflictData, это означает что в запросе были
 	//полученны данные которые уже записаны в хранилище, поэтому в таком случае выставдляется статус 409
 	httpStatus := http.StatusCreated
-	if errors.Is(err, storage.ErrConflictData) {
+	if errors.Is(err, models.ErrConflictData) {
 		httpStatus = http.StatusConflict
 	}
 	w.WriteHeader(httpStatus)

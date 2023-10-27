@@ -1,13 +1,13 @@
-package storage
+package pgstorage
 
 import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"practicumserver/internal/models"
-	"practicumserver/internal/storage"
 	"practicumserver/internal/utils"
 	"time"
 )
@@ -74,34 +74,37 @@ func (ds *DBStorage) getNewShortLink(ctx context.Context, link string) (string, 
 }
 
 func (ds *DBStorage) GetData(ctx context.Context, shortLink string) (string, error) {
-	ds.sm.Lock()
-	defer ds.sm.Unlock()
+	ds.Sm.Lock()
+	defer ds.Sm.Unlock()
 
 	ctx, cansel := context.WithTimeout(ctx, 5*time.Second)
 	defer cansel()
 
-	var originLink string
+	var getResp GetResponse
 	row := ds.DB.QueryRowContext(ctx,
-		"SELECT Link FROM links WHERE ShortLink= $1",
+		"SELECT Link, DeletedFlag FROM links WHERE ShortLink= $1",
 		shortLink)
 
 	select {
 	case <-ctx.Done():
 		return "", ctx.Err()
 	default:
-		if err := row.Scan(&originLink); err != nil {
+		if err := row.Scan(&getResp.originalURL, &getResp.deletedFlag); err != nil {
 			if err == sql.ErrNoRows {
-				return "", nil
+				return "", models.ErrNoRows
 			}
 			return "", err
 		}
-		return originLink, nil
+		if getResp.deletedFlag == true {
+			return "", models.ErrDeletedData
+		}
+		return getResp.originalURL, nil
 	}
 }
 
 func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, error) {
-	ds.sm.Lock()
-	defer ds.sm.Unlock()
+	ds.Sm.Lock()
+	defer ds.Sm.Unlock()
 	ctx, cansel := context.WithTimeout(ctx, 5*time.Second)
 	defer cansel()
 
@@ -120,7 +123,7 @@ func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, e
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgerrcode.UniqueViolation == pgErr.Code {
-				err = storage.ErrConflictData
+				err = models.ErrConflictData
 			}
 			return shortLink, err
 		}
@@ -130,8 +133,8 @@ func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, e
 
 func (ds *DBStorage) SetListData(ctx context.Context,
 	reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error) {
-	ds.sm.Lock()
-	defer ds.sm.Unlock()
+	ds.Sm.Lock()
+	defer ds.Sm.Unlock()
 
 	tx, err := ds.DB.Begin()
 	if err != nil {
@@ -212,4 +215,15 @@ func (ds *DBStorage) CheckUserID(ctx context.Context, userID string) (bool, erro
 		return true, nil
 	}
 	return false, nil
+}
+
+func (ds *DBStorage) UpdateDeletedFlag(ctx context.Context, userIDList, shortLinkList []string) error {
+	fmt.Println(userIDList, shortLinkList)
+	_, err := ds.DB.ExecContext(ctx,
+		"UPDATE links Set DeletedFlag = true WHERE UserId = ANY ($1) AND ShortLink = ANY ($2)",
+		userIDList, shortLinkList)
+	if err != nil {
+		return err
+	}
+	return nil
 }

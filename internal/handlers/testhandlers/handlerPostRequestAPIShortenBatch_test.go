@@ -9,7 +9,7 @@ import (
 	handlers "practicumserver/internal/handlers/allhandlers"
 	"practicumserver/internal/logger"
 	"practicumserver/internal/models"
-	"practicumserver/internal/storage/pg"
+	"practicumserver/internal/storage"
 	"strings"
 	"testing"
 )

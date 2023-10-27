@@ -1,10 +1,11 @@
-package storage
+package pgstorage
 
 import (
 	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"practicumserver/internal/models"
@@ -41,6 +42,30 @@ func (fs *FileStorage) NewRead() error {
 	return nil
 }
 
+func (fs *FileStorage) FullWrite() error {
+	file, err := os.OpenFile(fs.FileName, os.O_WRONLY|os.O_TRUNC, 0666)
+	if err != nil {
+		return err
+	}
+	for UserID, URLList := range fs.UserIDUrls {
+		for shortLink, originalURL := range URLList {
+			URLData := models.FileData{
+				UserID:      UserID,
+				ShortURL:    shortLink,
+				OriginalURL: originalURL,
+				DeletedFlag: false,
+			}
+			if _, ok := fs.DeletedURl[shortLink]; ok {
+				URLData.DeletedFlag = true
+			}
+			if err := json.NewEncoder(file).Encode(URLData); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // Метод для записи данных в файл
 func (fs *FileStorage) NewWrite(userIDStr, originalURL, ShortURL string) {
 	file, err := os.OpenFile(fs.FileName, os.O_WRONLY|os.O_APPEND, 0666)
@@ -52,6 +77,7 @@ func (fs *FileStorage) NewWrite(userIDStr, originalURL, ShortURL string) {
 		UserID:      userIDStr,
 		ShortURL:    ShortURL,
 		OriginalURL: originalURL,
+		DeletedFlag: false,
 	}
 
 	if err := json.NewEncoder(file).Encode(fileData); err != nil {
@@ -61,9 +87,14 @@ func (fs *FileStorage) NewWrite(userIDStr, originalURL, ShortURL string) {
 
 // Метод для записи данных в поля структура MemoryStorage при чтении их из файла
 func (fs *FileStorage) SetFromFileData(fileData *models.FileData) {
+	fmt.Println(fileData)
 	fs.LinkBoolUrls[fileData.OriginalURL] = true
 	fs.ShortBoolUrls[fileData.ShortURL] = false
-	fs.ShortUrls[fileData.ShortURL] = fileData.OriginalURL
+	if !fileData.DeletedFlag {
+		fs.ShortUrls[fileData.ShortURL] = fileData.OriginalURL
+	} else {
+		fs.DeletedURl[fileData.ShortURL] = fileData.OriginalURL
+	}
 	if fs.UserIDUrls[fileData.UserID] == nil {
 		fs.UserIDUrls[fileData.UserID] = make(map[string]string)
 	}
@@ -131,4 +162,14 @@ func (fs *FileStorage) SetListData(ctx context.Context,
 
 func (fs *FileStorage) GetListData(ctx context.Context, prefix string) ([]models.ResponseAPIUserUrls, error) {
 	return fs.MemoryStorage.GetListData(ctx, prefix)
+}
+
+func (fs *FileStorage) UpdateDeletedFlag(ctx context.Context, userIDList, shortLinkList []string) error {
+	if err := fs.MemoryStorage.UpdateDeletedFlag(ctx, userIDList, shortLinkList); err != nil {
+		return err
+	}
+	if err := fs.FullWrite(); err != nil {
+		return err
+	}
+	return nil
 }
