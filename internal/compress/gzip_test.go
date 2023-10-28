@@ -13,17 +13,15 @@ import (
 	"practicumserver/internal/cookie"
 	handlers "practicumserver/internal/handlers/allhandlers"
 	"practicumserver/internal/logger"
+	"practicumserver/internal/models"
 	"practicumserver/internal/storage"
 	"testing"
 )
 
-type HandlerFuncAdapter func(http.ResponseWriter, *http.Request)
-
-func (h HandlerFuncAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h(w, r)
-}
-
+// createHTTPAuthClient creates an HTTP client with a JWT cookie for authentication in test func.
 func createHTTPAuthClient(log *zap.Logger, srv *httptest.Server) (*http.Client, error) {
+	// Create a cookie jar and JWT token for authentication.
+	// Set up an HTTP client with the authenticated cookie.
 	jar, _ := cookiejar.New(nil)
 	token, err := cookie.BuildJWTString("testUserID")
 	if err != nil {
@@ -52,16 +50,18 @@ func createHTTPAuthClient(log *zap.Logger, srv *httptest.Server) (*http.Client, 
 	return client, nil
 }
 
+// TestMiddlewareGzipHandleFunc is a test function for the MiddlewareGzipHandleFunc middleware.
 func TestMiddlewareGzipHandleFunc(t *testing.T) {
+	// Initialize logger, storage, and handlers for testing.
 	log, _ := logger.NewZapLogger(false)
 	strg, _ := storage.NewStorage(log.Logger, "", "")
 	hndlrs := handlers.NewHandlers(strg, log.Logger, "http://localhost:8080")
 
-	adapter := HandlerFuncAdapter(hndlrs.PostRequestAPIShorten)
-	//newHandler := MiddlewareGzipHandleFunc(nil)
-	//handler := newHandler(adapter)
+	// Create an adapter for the handler function.
+	adapter := models.HandlerFuncAdapter(hndlrs.PostRequestAPIShorten)
 
-	server := httptest.NewServer(cookie.MiddlewareCheckCoockie(log.Logger,
+	// Create an HTTP server with middleware for GZIP compression.
+	server := httptest.NewServer(cookie.MiddlewareCheckCookie(log.Logger,
 		hndlrs)(MiddlewareGzipHandleFunc(log.Logger)(adapter)))
 	defer server.Close()
 	client, err := createHTTPAuthClient(log.Logger, server)
@@ -70,6 +70,8 @@ func TestMiddlewareGzipHandleFunc(t *testing.T) {
 	requestBody := `{"url": "http://test.com"}`
 
 	t.Run("send_gzip", func(t *testing.T) {
+		// Test case for sending GZIP-encoded data.
+		// Compress the request body and make an HTTP POST request with GZIP-encoded data.
 		buf := bytes.NewBuffer(nil)
 		zb := gzip.NewWriter(buf)
 		_, err := zb.Write([]byte(requestBody))
@@ -95,8 +97,10 @@ func TestMiddlewareGzipHandleFunc(t *testing.T) {
 	})
 
 	t.Run("accept_gzip", func(t *testing.T) {
+		// Test case for accepting GZIP-encoded data.
+		// Send an HTTP POST request with an "Accept-Encoding: gzip" header.
 		buf := bytes.NewBufferString(requestBody)
-		request := httptest.NewRequest("POST", server.URL+"/api/shorten", buf)
+		request := httptest.NewRequest(http.MethodPost, server.URL+"/api/shorten", buf)
 		request.RequestURI = ""
 		request.Header.Set("Accept-Encoding", "gzip")
 		request.Header.Set("Content-Type", "application/json; charset=utf-8")

@@ -15,7 +15,7 @@ import (
 	"testing"
 )
 
-// Функция тестирования Post запроса
+// TestPostRequest tests the function PostRequest
 func TestPostRequest(t *testing.T) {
 	log, _ := logger.NewZapLogger(false)
 	strg, _ := storage.NewStorage(log.Logger, "", "")

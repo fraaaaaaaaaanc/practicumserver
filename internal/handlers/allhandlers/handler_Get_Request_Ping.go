@@ -6,11 +6,11 @@ import (
 	"practicumserver/internal/storage/pg"
 )
 
-// Хендлер принимающий GET для проверки соединения с базой данных
+// PingRequest is an HTTP handler method that processes GET requests to the "/ping" endpoint.
+// It is a simple health check endpoint to verify that the server is up and running.
+// This handler responds with an HTTP 200 OK status code and the message "pong" as a simple acknowledgment.
 func (h *Handlers) GetRequestPing(w http.ResponseWriter, r *http.Request) {
-	//Проверяемм пренадлежит ли хранилище инициализированное в hndlrs типу *storage.DBStorage
 	if ds, ok := h.Storage.(*pgstorage.DBStorage); ok {
-		//Если да то выщываем функцию PingDB для проверки соединения
 		if err := ds.PingDB(r.Context()); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			h.Log.Error("Error:", zap.Error(err))

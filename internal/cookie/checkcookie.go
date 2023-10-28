@@ -1,3 +1,8 @@
+// Package cookie provides functions and middleware for handling user authentication and session management using cookies.
+//
+// This package includes functionality for generating and validating JWT tokens, creating unique user IDs, and checking
+// user authentication through cookies. It offers a complete solution for user authentication and managing session
+// data within web applications.
 package cookie
 
 import (
@@ -5,7 +10,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
 	"net/http"
@@ -14,15 +18,22 @@ import (
 	"time"
 )
 
+// SecretKey is the secret key used for signing and verifying JWT tokens.
 const SecretKey = "key"
+
+// TokenExp represents the token expiration time.
 const TokenExp = time.Hour * 6
+
+// MaxLenUserID defines the maximum length of the generated user ID.
 const MaxLenUserID = 16
 
+// Claims represents custom JWT claims that include the UserID.
 type Claims struct {
 	jwt.RegisteredClaims
 	UserID string
 }
 
+// NewUserID generates a new user ID by creating random bytes and checking its uniqueness.
 func NewUserID(ctx context.Context, hndlrs *handlers.Handlers) (string, error) {
 	userIDbytes := make([]byte, MaxLenUserID)
 	for {
@@ -35,13 +46,13 @@ func NewUserID(ctx context.Context, hndlrs *handlers.Handlers) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		fmt.Println(existsUserID)
 		if existsUserID {
 			return userID, nil
 		}
 	}
 }
 
+// BuildJWTString creates a JWT token with the provided user ID and signs it with the SecretKey.
 func BuildJWTString(userID string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -56,6 +67,7 @@ func BuildJWTString(userID string) (string, error) {
 	return tokenString, err
 }
 
+// GetUserID retrieves the user ID from a JWT token.
 func GetUserID(tokenString string) (string, error) {
 	var claims Claims
 	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
@@ -70,12 +82,14 @@ func GetUserID(tokenString string) (string, error) {
 	return claims.UserID, nil
 }
 
-func MiddlewareCheckCoockie(log *zap.Logger, hndlrs *handlers.Handlers) func(h http.Handler) http.Handler {
+// MiddlewareCheckCookie is a middleware function that checks and manages user authentication via cookies.
+func MiddlewareCheckCookie(log *zap.Logger, hndlrs *handlers.Handlers) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var userID string
 			cookie, err := r.Cookie("Authorization")
 			if err != nil {
+				// If no Authorization cookie is found, generate a new user ID and create a JWT token.
 				userID, err = NewUserID(r.Context(), hndlrs)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
@@ -97,6 +111,7 @@ func MiddlewareCheckCoockie(log *zap.Logger, hndlrs *handlers.Handlers) func(h h
 				}
 				http.SetCookie(w, newCookie)
 			} else {
+				// If an Authorization cookie is found, validate it and extract the user ID.
 				userID, err = GetUserID(cookie.Value)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
@@ -104,6 +119,7 @@ func MiddlewareCheckCoockie(log *zap.Logger, hndlrs *handlers.Handlers) func(h h
 					return
 				}
 			}
+			// Set the user ID in the request context and continue processing.
 			ctx := context.WithValue(r.Context(), models.UserIDKey, userID)
 			r = r.WithContext(ctx)
 

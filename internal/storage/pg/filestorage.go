@@ -5,23 +5,23 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"practicumserver/internal/models"
 	"strings"
 )
 
-// Структура для хранения данных при их чтении из файла методом NewRead
+// Comments for the GetData, SetData, SetListData, GetListData, CheckUserID, UpdateDeletedFlag
+// methods are in storage/StorageMock
 
-// Структура для хранения данных в файле
+// FileStorage structure for storing data in a file
 type FileStorage struct {
 	FileName string
 	*MemoryStorage
 	StorageParam
 }
 
-// Метод для чтениях данных из файла и их переноса в поля структура MemoryStorage
+// NewRead method reads data from a file and transfers it to the fields of the MemoryStorage structure.
 func (fs *FileStorage) NewRead() error {
 	file, err := os.OpenFile(fs.FileName, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
@@ -42,6 +42,7 @@ func (fs *FileStorage) NewRead() error {
 	return nil
 }
 
+// FullWrite a method for overwriting data to a file when deleting it from a function UpdateDeletedFlag.
 func (fs *FileStorage) FullWrite() error {
 	file, err := os.OpenFile(fs.FileName, os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
@@ -66,7 +67,7 @@ func (fs *FileStorage) FullWrite() error {
 	return nil
 }
 
-// Метод для записи данных в файл
+// NewWrite method writes data to a file.
 func (fs *FileStorage) NewWrite(userIDStr, originalURL, ShortURL string) {
 	file, err := os.OpenFile(fs.FileName, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
@@ -85,9 +86,8 @@ func (fs *FileStorage) NewWrite(userIDStr, originalURL, ShortURL string) {
 	}
 }
 
-// Метод для записи данных в поля структура MemoryStorage при чтении их из файла
+// SetFromFileData method sets data from a file into the MemoryStorage fields.
 func (fs *FileStorage) SetFromFileData(fileData *models.FileData) {
-	fmt.Println(fileData)
 	fs.LinkBoolUrls[fileData.OriginalURL] = true
 	fs.ShortBoolUrls[fileData.ShortURL] = false
 	if !fileData.DeletedFlag {
@@ -101,8 +101,6 @@ func (fs *FileStorage) SetFromFileData(fileData *models.FileData) {
 	fs.UserIDUrls[fileData.UserID][fileData.ShortURL] = fileData.OriginalURL
 }
 
-// Переопределение метожа SetData структуры MemoryStorage
-// Метод вызывает SetData после чего записывает данные в файл методом NewWrite
 func (fs *FileStorage) SetData(ctx context.Context, originalURL string) (string, error) {
 	if _, ok := fs.LinkBoolUrls[originalURL]; !ok {
 		shortLink, err := fs.MemoryStorage.SetData(ctx, originalURL)
@@ -118,11 +116,6 @@ func (fs *FileStorage) SetData(ctx context.Context, originalURL string) (string,
 	return fs.checkShortLink(originalURL)
 }
 
-// Метод принимает слайс оригинальных URL reqList []models.RequestAPIBatch
-// и проверяет их на наличие в этом хранилище, если данные на записаны то программа вызовет
-// метод SetData и запишет их в результирующий слайс respList []models.ResponseAPIBatch,
-// иначе программа вызовет метод checkShortLink, получит сокращенные URL для переданного OriginalURL
-// и запишет результат в respList []models.ResponseAPIBatch
 func (fs *FileStorage) SetListData(ctx context.Context,
 	reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error) {
 

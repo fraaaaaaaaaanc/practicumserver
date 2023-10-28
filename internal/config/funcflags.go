@@ -6,24 +6,24 @@ import (
 	"strings"
 )
 
-// Струкутра описывающая данные адреса сервера
+// Hp describes the server address data structure.
 type Hp struct {
-	Host string
-	Port int
+	Host string // Host is the server's hostname or IP address.
+	Port int    // Port is the port on which the server listens.
 }
 
-// Структура описывающая поля для хранения данных флагов
+// Flags defines the fields to store flag values used in the application's configuration.
 type Flags struct {
-	Prefix          string
-	LogLevel        string
-	FileLog         bool
-	ConsoleLog      bool
-	FileStoragePath string
-	DBStorageAdress string
-	Hp
+	Prefix          string // Prefix is the base URL for the application.
+	LogLevel        string // LogLevel is the logging level.
+	FileLog         bool   // FileLog enables or disables file logging.
+	ConsoleLog      bool   // ConsoleLog enables or disables console logging (not used in the code).
+	FileStoragePath string // FileStoragePath is the path to the file storage.
+	DBStorageAdress string // DBStorageAdress is the database connection string.
+	Hp                     // Embed the Hp struct to handle server address configuration.
 }
 
-// Инициализатор структры Flags задающий значения по умолчанию
+// newFlags initializes the Flags struct with default values.
 func newFlags() Flags {
 	return Flags{
 		Prefix: "http://localhost:8080",
@@ -38,12 +38,12 @@ func newFlags() Flags {
 	}
 }
 
-// Переопределение метода String для формирования адресса сервера
+// String method overrides the default String method to format the server address as a string.
 func (h *Hp) String() string {
 	return h.Host + ":" + strconv.Itoa(h.Port)
 }
 
-// Переопределение метода Set для проверки адресса сервера и записи данных в структуру Hp
+// Set method overrides the default Set method to validate and set the server address.
 func (h *Hp) Set(addres string) error {
 	if addres == "" {
 		h.Host = "localhost"

@@ -14,6 +14,7 @@ import (
 	"testing"
 )
 
+// TestPostRequestAPIShortenBatch tests the function PostRequestAPIShortenBatch
 func TestPostRequestAPIShortenBatch(t *testing.T) {
 	log, _ := logger.NewZapLogger(false)
 	strg, _ := storage.NewStorage(log.Logger, "", "")

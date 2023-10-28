@@ -11,6 +11,7 @@ import (
 	"testing"
 )
 
+// TestGetRequestPing tests the function GetRequestPing
 func TestGetRequestPing(t *testing.T) {
 	log, _ := logger.NewZapLogger(false)
 

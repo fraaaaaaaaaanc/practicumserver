@@ -1,21 +1,20 @@
+// Package compress provides middleware for compressing HTTP request and response data using GZIP encoding.
 package compress
 
 import (
 	"compress/gzip"
-	"fmt"
 	"go.uber.org/zap"
 	"io"
 	"net/http"
-	"practicumserver/internal/models"
 )
 
-// Струкутра для хранения обычного и сжатого ответа хендлера
+// Structure for storing regular and compressed response in a handler.
 type compressWriter struct {
 	w  http.ResponseWriter
 	gz *gzip.Writer
 }
 
-// Инициализатор структуры compressWriter
+// Constructor for the compressWriter structure.
 func newCompressWriter(w http.ResponseWriter) *compressWriter {
 	return &compressWriter{
 		w:  w,
@@ -23,12 +22,12 @@ func newCompressWriter(w http.ResponseWriter) *compressWriter {
 	}
 }
 
-// Переопределнные методы Header, Write, WriteHeader, Close
+// Overridden methods: Header, Write, WriteHeader, Close.
 func (c *compressWriter) Header() http.Header {
 	return c.w.Header()
 }
 
-// Переопределенный метод Write проверяет значение ответа чтобы понять, нужно его сжимать или нет
+// Overridden Write method checks the response content type to determine whether it should be compressed.
 func (c *compressWriter) Write(b []byte) (int, error) {
 	if len(b) < 1 ||
 		(c.Header().Get("Content-Type") != "text/plain" &&
@@ -38,6 +37,7 @@ func (c *compressWriter) Write(b []byte) (int, error) {
 	return c.gz.Write(b)
 }
 
+// Overridden WriteHeader method
 func (c *compressWriter) WriteHeader(statusCode int) {
 	if statusCode < 300 {
 		c.w.Header().Set("Content-Encoding", "gzip")
@@ -45,17 +45,18 @@ func (c *compressWriter) WriteHeader(statusCode int) {
 	c.w.WriteHeader(statusCode)
 }
 
+// Overridden Close method
 func (c *compressWriter) Close() error {
 	return c.gz.Close()
 }
 
-// Струкутра для хранения обычного и сжатого запроса
+// Structure for storing regular and compressed request.
 type compressReader struct {
 	r  io.ReadCloser
 	rz *gzip.Reader
 }
 
-// Инициализатор структуры compressReader
+// Constructor for the compressReader structure.
 func newCompressReader(r io.ReadCloser) (*compressReader, error) {
 	rz, err := gzip.NewReader(r)
 	if err != nil {
@@ -68,7 +69,7 @@ func newCompressReader(r io.ReadCloser) (*compressReader, error) {
 	}, nil
 }
 
-// Переопределение методов Read, Close
+// Overridden Read and Close methods.
 func (c *compressReader) Read(b []byte) (int, error) {
 	return c.rz.Read(b)
 }
@@ -77,13 +78,11 @@ func (c *compressReader) Close() error {
 	return c.rz.Close()
 }
 
-// Middleware функуия которая проверяет полученные данные на сжатость и проверяет
-// может ли клиент принять сжатые данные, исходя из этого метод вызывает инициазиторы структур
-// newCompressReader и newCompressWriter
+// Middleware function that checks incoming data for compression and client's acceptance of compressed data.
+// Based on this, it calls the constructors of the compressReader and compressWriter structures.
 func MiddlewareGzipHandleFunc(logger *zap.Logger) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println(r.Context().Value(models.UserIDKey))
 			var cw *compressWriter
 			var cr *compressReader
 			ow := w

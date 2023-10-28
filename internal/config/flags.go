@@ -1,3 +1,7 @@
+// Package config provides a configuration mechanism for the application.
+// The package defines the Flags struct, which holds various configuration parameters for the application.
+// It also includes functions for parsing configuration flags from the command line and reading configuration
+// values from environment variables. These functions allow users to configure the application's behavior.
 package config
 
 import (
@@ -5,19 +9,18 @@ import (
 	"os"
 )
 
-// Метод запускающий парсинг флагов,
-// сначала метод проверят флаги переданные при запускеметодом ParseFlags, после чего
-// вызывает метод ParseEnv для проверки переменных окружения, после чего возвращает структуру со значениями
-// флагов
-func ParseConfFlugs() *Flags {
+// ParseConfFlags parses configuration flags. It first checks the flags passed during program execution.
+// Then, it calls ParseEnv to check environment variables and updates the values in the Flags struct accordingly.
+// Finally, it returns the Flags struct with the values set from flags and environment variables.
+func ParseConfFlags() *Flags {
 	flags := ParseFlags()
 	ParseEnv(flags)
 	return flags
 }
 
-// Метод проверяет наличие значений в переменных окружения, если переменные не пустые, то
-// их значения помещается в поле структуры flags, тем самым заменяя значение переданное пользователем
-// при запуске программы или значение по умолчанию
+// ParseEnv checks the presence of values in environment variables. If the environment variables are not empty,
+// their values are assigned to the fields of the Flags struct, potentially overriding values set by the user during
+// program execution.
 func ParseEnv(flags *Flags) {
 	if baseURLEnv := os.Getenv("BASE_URL"); baseURLEnv != "" {
 		flags.Prefix = baseURLEnv
@@ -38,7 +41,7 @@ func ParseEnv(flags *Flags) {
 	}
 }
 
-// Метод задающий флаги командой строки и запускающий их парсинг
+// ParseFlags defines and parses command-line flags.
 func ParseFlags() *Flags {
 	flags := newFlags()
 

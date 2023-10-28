@@ -1,3 +1,4 @@
+// Package storage defines the StorageMock interface, which outlines the methods for interacting with the data storage.
 package storage
 
 import (
@@ -6,21 +7,28 @@ import (
 )
 
 type StorageMock interface {
-	//Метод принимает оригинальную ссылку и вызывает для нее метод checkShortLink,
-	//далее функция метод проверяет есть ли данная ссылка в хранилище, если да, то не устанавливает
-	//значения, если нет, то устанавливает, метод возвращает сокращенную ссылку для переданного originalURL и
-	//объект типа error
+	// SetData accepts an original URL and stores it in the storage.
+	// It returns the shortened URL for the provided original URL and an error if any issue occurs.
 	SetData(ctx context.Context, link string) (string, error)
-	//Метода который принимает сокращенную сыылку и проверяет есть ли она в хранилище,
-	//если такая сокращенная ссылка уже есть, то функция возвращает оригинальную ссылку,
-	//иначе функция возвращает пустую строку
+
+	// GetData receives a shortened URL and retrieves the associated original URL from the storage.
+	// It returns the original URL and an error if the shortened URL is found.
+	// If the URL is not found, it returns an empty string.
 	GetData(ctx context.Context, shortLink string) (string, error)
-	//Метод принимает слайс []models.RequestAPIBatch с множеством оригинальных url
-	//и последовательно для кажого из них вызывает метод SetData, после чего помещает полученный
-	//сокращенный URL в слайс respList []models.ResponseAPIBatch
-	//Метод возвращает слайс []models.ResponseAPIBatch и объект типа error
+
+	// SetListData takes a slice of original URLs and stores each URL in the storage.
+	// It returns a slice of models.ResponseAPIBatch, which contains shortened URLs for the original URLs, and an error.
 	SetListData(ctx context.Context, reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error)
+
+	// GetListData retrieves a list of all URLs submitted by the user.
+	// It returns a slice of models.ResponseAPIUserUrls and an error.
 	GetListData(ctx context.Context, prefix string) ([]models.ResponseAPIUserUrls, error)
+
+	// CheckUserID checks if a generated UserID is unique within the storage.
+	// It returns true if the UserID is unique, false if it exists, and an error if any issue occurs.
 	CheckUserID(ctx context.Context, userID string) (bool, error)
+
+	// UpdateDeletedFlag modifies the deletion flag of URLs based on the user and shortLink lists.
+	// It does not return any data but may return an error if there's an issue.
 	UpdateDeletedFlag(ctx context.Context, userIDList, shortLinkList []string) error
 }

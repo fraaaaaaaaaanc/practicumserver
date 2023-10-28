@@ -15,6 +15,7 @@ import (
 	"testing"
 )
 
+// TestPostRequestApiShorten tests the function PostRequestApiShorten
 func TestPostRequestApiShorten(t *testing.T) {
 	log, _ := logger.NewZapLogger(false)
 	strg, _ := storage.NewStorage(log.Logger, "", "")

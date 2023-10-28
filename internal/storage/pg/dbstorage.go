@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"practicumserver/internal/models"
@@ -12,15 +11,16 @@ import (
 	"time"
 )
 
-//Комментарии для методов SetData, GetData, SetListData находятся в storage/StorageMock
+// Comments for the GetData, SetData, SetListData, GetListData, CheckUserID, UpdateDeletedFlag
+// methods are in storage/StorageMock
 
-// Структура для хранения данных в БД
+// DBStorage structure for storing data in a database
 type DBStorage struct {
 	DB *sql.DB
 	StorageParam
 }
 
-// Метод проверяющий подключение к БД
+// PingDB method checks the connection to the database.
 func (ds *DBStorage) PingDB(ctx context.Context) error {
 	if err := ds.DB.PingContext(ctx); err != nil {
 		return err
@@ -28,16 +28,14 @@ func (ds *DBStorage) PingDB(ctx context.Context) error {
 	return nil
 }
 
-// Метод который формирует новую сокращенную ссылку и проверяет
-// cуществует ли такая сокращенная ссылка, если она есть, то функция
-// генерирует новую сокращенную ссылку пока она не будет уникальной
+// checkShortLink method generates a new short link and checks if it already exists in the database.
 func (ds *DBStorage) checkShortLink(ctx context.Context) (string, error) {
 	for {
 		shortLink := utils.LinkShortening()
 
 		var exists bool
-		//Данный запрос проверяет существует ли запись shortLink в колонке ShortLink
-		//и помещает результат в булевую переменную
+		// This query checks if a record with shortLink exists in the ShortLink column and stores the
+		// result in a boolean variable.
 		row := ds.DB.QueryRowContext(ctx,
 			"SELECT EXISTS (SELECT 1 FROM links WHERE ShortLink = $1)",
 			shortLink)
@@ -50,13 +48,13 @@ func (ds *DBStorage) checkShortLink(ctx context.Context) (string, error) {
 	}
 }
 
-// Метод который проверят наличие оригинальной ссылки в хранилище,
-// если переданная оригинальная ссылка уже есть, то код возвращает ее сокращенный
-// варинт и ошибку storage.ErrConflictData, иначе вызывает метод getNewShortLink
+// getNewShortLink method checks for the existence of an original link in the storage.
+// If the given original link already exists, it returns its shortened version and a storage.ErrConflictData error.
+// Otherwise, it calls the getNewShortLink method.
 func (ds *DBStorage) getNewShortLink(ctx context.Context, link string) (string, error) {
 	var shortlink string
-	//Данный запрос ищет запись ShortLink для которой Link = link(Оригинальная ссылка),
-	//если запись не найдена вызывается метод checkShortLink
+	// This query looks for a record with ShortLink for which Link = link (Original URL).
+	// If the record is not found, the checkShortLink method is called.
 	row := ds.DB.QueryRowContext(ctx,
 		"SELECT ShortLink FROM links WHERE Link = $1",
 		link)
@@ -74,9 +72,6 @@ func (ds *DBStorage) getNewShortLink(ctx context.Context, link string) (string, 
 }
 
 func (ds *DBStorage) GetData(ctx context.Context, shortLink string) (string, error) {
-	ds.Sm.Lock()
-	defer ds.Sm.Unlock()
-
 	ctx, cansel := context.WithTimeout(ctx, 5*time.Second)
 	defer cansel()
 
@@ -85,26 +80,19 @@ func (ds *DBStorage) GetData(ctx context.Context, shortLink string) (string, err
 		"SELECT Link, DeletedFlag FROM links WHERE ShortLink= $1",
 		shortLink)
 
-	select {
-	case <-ctx.Done():
-		return "", ctx.Err()
-	default:
-		if err := row.Scan(&getResp.originalURL, &getResp.deletedFlag); err != nil {
-			if err == sql.ErrNoRows {
-				return "", models.ErrNoRows
-			}
-			return "", err
+	if err := row.Scan(&getResp.originalURL, &getResp.deletedFlag); err != nil {
+		if err == sql.ErrNoRows {
+			return "", models.ErrNoRows
 		}
-		if getResp.deletedFlag {
-			return "", models.ErrDeletedData
-		}
-		return getResp.originalURL, nil
+		return "", err
 	}
+	if getResp.deletedFlag {
+		return "", models.ErrDeletedData
+	}
+	return getResp.originalURL, nil
 }
 
 func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, error) {
-	ds.Sm.Lock()
-	defer ds.Sm.Unlock()
 	ctx, cansel := context.WithTimeout(ctx, 5*time.Second)
 	defer cansel()
 
@@ -133,8 +121,6 @@ func (ds *DBStorage) SetData(ctx context.Context, originalURL string) (string, e
 
 func (ds *DBStorage) SetListData(ctx context.Context,
 	reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error) {
-	ds.Sm.Lock()
-	defer ds.Sm.Unlock()
 
 	tx, err := ds.DB.Begin()
 	if err != nil {
@@ -218,7 +204,6 @@ func (ds *DBStorage) CheckUserID(ctx context.Context, userID string) (bool, erro
 }
 
 func (ds *DBStorage) UpdateDeletedFlag(ctx context.Context, userIDList, shortLinkList []string) error {
-	fmt.Println(userIDList, shortLinkList)
 	_, err := ds.DB.ExecContext(ctx,
 		"UPDATE links Set DeletedFlag = true WHERE UserId = ANY ($1) AND ShortLink = ANY ($2)",
 		userIDList, shortLinkList)

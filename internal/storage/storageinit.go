@@ -9,19 +9,18 @@ import (
 	"sync"
 )
 
-// Функция NewStorage принимает параметры log(для логирования), и две булевые переменные
-// полученные при парсинге флагов. Функция проверяет эти флаги, если тот или иной флга
-// принимает значени true, то функция создает объект storage того типа, реализующий
-// интерфейс storage.StorageMock
+// NewStorage creates and returns a storage instance based on the provided parameters.
+// It accepts a logger for logging, a DBStorageAdress for database storage, and a FileStoragePath for file-based storage.
+// The function determines the storage type based on the presence of these parameters.
 func NewStorage(log *zap.Logger,
 	DBStorageAdress, FileStoragePath string) (StorageMock, error) {
-	//Cоздание структуры с общими элементами для кажлого storage
 	var sm sync.Mutex
+	// Create a storage structure with common elements for each storage type.
 	strg := pgstorage.StorageParam{
 		Log: log,
 		Sm:  &sm,
 	}
-	//Создание storage для работы с БД
+	// Create a storage for working with a database.
 	if DBStorageAdress != "" {
 		db, err := sql.Open("pgx",
 			DBStorageAdress)
@@ -57,16 +56,15 @@ func NewStorage(log *zap.Logger,
 		if err != nil {
 			return nil, err
 		}
+		// Return the created database storage.
 		return &pgstorage.DBStorage{
 			DB:           db,
 			StorageParam: strg,
 		}, nil
 	}
-	//Создание storage для хранения данных в памяти
-	//Данный storage создается раньше чем storage для работы с файлами
-	//т.к. он является анонимным полем второго
-	//При создании этого storage сразу создаются некоторе поля в map-ах
-	//для тестирования
+	// Create a memory storage.
+	// This storage is created before the file-based storage since it's used as an anonymous field in the latter.
+	// The memory storage initializes some map fields for testing.
 	memoryStorage := &pgstorage.MemoryStorage{
 		StorageParam: strg,
 		ShortBoolUrls: map[string]bool{
@@ -85,7 +83,7 @@ func NewStorage(log *zap.Logger,
 			"test": "http://test",
 		},
 	}
-	//Создание storage для хранения данных в файле
+	// Create a file storage instance and read data from the file.
 	if FileStoragePath != "" {
 		fs := &pgstorage.FileStorage{
 			MemoryStorage: memoryStorage,

@@ -1,3 +1,4 @@
+// Package app provides the main application logic, including initialization, configuration, and server setup.
 package app
 
 import (
@@ -13,17 +14,19 @@ import (
 	"time"
 )
 
+// app represents the main application structure containing various components.// app represents the main application structure containing various components.
 type app struct {
-	Flags  *config.Flags
-	Log    *logger.ZapLogger
-	Strg   storage.StorageMock
-	Hndlrs *handlers.Handlers
-	Rtr    chi.Router
+	Flags  *config.Flags       // Flags is a reference to the configuration flags used by the application.
+	Log    *logger.ZapLogger   // Log is the application's logger, providing structured and efficient logging.
+	Strg   storage.StorageMock // Strg represents the storage implementation used by the application.
+	Hndlrs *handlers.Handlers  // Hndlrs is a reference to the application's handlers, providing request handling logic.
+	Rtr    chi.Router          // Rtr is the application's router, responsible for routing incoming HTTP requests.
 }
 
+// New App initializes the application components and returns an app instance.
 func NewApp() (*app, error) {
-	//Парсинг флагов и создание переменной логирования
-	flags := config.ParseConfFlugs()
+	// Parse command-line flags and create a logging variable.
+	flags := config.ParseConfFlags()
 	log, err := logger.NewZapLogger(flags.FileLog)
 	if err != nil {
 		return nil, err
@@ -33,9 +36,9 @@ func NewApp() (*app, error) {
 	if err != nil {
 		return nil, err
 	}
-	//Создание объекта handlers
+	// Create a handlers object.
 	hndlrs := handlers.NewHandlers(strg, log.Logger, flags.Prefix)
-	//Создание объекта роутера для передачи в http.ListenAndServe
+	// Create a router object to pass to http.ListenAndServe.
 	rtr, err := router.Router(hndlrs, log.Logger)
 	if err != nil {
 		return nil, err
@@ -53,14 +56,20 @@ func NewApp() (*app, error) {
 	return appObj, nil
 }
 
+// Delete ShortLink continuously listens to the a.Hndlrs.DelCn channel.
+// Which receives bundles of shortened URLs for their deletion
 func (a *app) DeleteShortLink() {
 	ticker := time.NewTicker(1 * time.Second)
 
 	var shortLinkList []*models.DeleteURL
 	for {
 		select {
+		// The channel receives data in the form of a models structure.DeleteURL
 		case shortLinksStruct := <-a.Hndlrs.DelCn:
 			shortLinkList = append(shortLinkList, shortLinksStruct)
+		// Each ticker function checks the received shortLinksStruct in the shortLinkList.
+		// If the shortLinkList is not empty, the program compiles two lists of userID and shortLink from this data
+		// and passes them to the UpdateDeletedFlag function.
 		case <-ticker.C:
 			if len(shortLinkList) == 0 {
 				continue

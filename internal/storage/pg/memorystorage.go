@@ -7,9 +7,10 @@ import (
 	"practicumserver/internal/utils"
 )
 
-//Комментарии для методов SetData, GetData, SetListData находятся в storage/StorageMock
+// Comments for the GetData, SetData, SetListData, GetListData, CheckUserID, UpdateDeletedFlag
+// methods are in storage/StorageMock
 
-// Структура для хранения данных в памяти
+// MemoryStorage structures for in-memory storage
 type MemoryStorage struct {
 	ShortBoolUrls map[string]bool
 	LinkBoolUrls  map[string]bool
@@ -19,9 +20,7 @@ type MemoryStorage struct {
 	StorageParam
 }
 
-// Метод который формирует новую сокращенную ссылку и проверяет
-// cуществует ли такая сокращенная ссылка, если она есть, то функция
-// генерирует новую сокращенную ссылку пока она не будет уникальной
+// getNewShortLink method for generating a new short link and checking for its uniqueness.
 func (ms *MemoryStorage) getNewShortLink() string {
 	shortLink := utils.LinkShortening()
 	for ms.ShortBoolUrls[shortLink] {
@@ -30,9 +29,8 @@ func (ms *MemoryStorage) getNewShortLink() string {
 	return shortLink
 }
 
-// Метод который проверят наличие оригинальной ссылки в хранилище,
-// если переданная оригинальная ссылка уже есть, то код возвращает ее сокращенный
-// варинт и ошибку storage.ErrConflictData, иначе вызывает метод getNewShortLink
+// checkShortLink checks for the existence of an original URL in the storage. If the given original URL already exists,
+// the function returns its shortened version and an error models.ErrConflictData. Otherwise, it calls the getNewShortLink method.
 func (ms *MemoryStorage) checkShortLink(originalURL string) (string, error) {
 	if _, ok := ms.LinkBoolUrls[originalURL]; ok {
 		for shortLink, longLink := range ms.ShortUrls {
