@@ -73,7 +73,7 @@ func TestMiddlewareCheckCookie(t *testing.T) {
 	tests := []struct {
 		req
 		resp
-		userId string
+		userID string
 		name   string
 	}{
 		{
