@@ -1,37 +1,41 @@
+// Package main is the entry point of the application.
+// It initializes the application and starts the server.
 package main
 
 import (
 	"go.uber.org/zap"
 	"net/http"
-	"practicumserver/internal/config"
-	"practicumserver/internal/logger"
-	"practicumserver/internal/router"
+	"practicumserver/internal/app"
+	"practicumserver/internal/storage/pg"
 	"practicumserver/internal/utils"
 )
 
 func main() {
+	// Beginning of the program execution.
 	if err := run(); err != nil {
 		panic(err)
 	}
 }
 
 func run() error {
-	//creating an instance of flags, storage, logs
-	flags := config.ParseConfFlugs()
-	log, err := logger.NewZapLogger(flags.FileLog)
+	// Create a new application instance.
+	appStrct, err := app.NewApp()
 	if err != nil {
 		return err
 	}
+	// Close log files when done.
+	defer utils.Closelog(appStrct.Log, appStrct.Flags)
 
-	defer utils.Closelog(log, flags)
+	// Close the database connection if it's a database storage.
+	defer func() {
+		if DBstrg, ok := appStrct.Strg.(*pgstorage.DBStorage); ok {
+			DBstrg.DB.Close()
+		}
+	}()
 
-	rtr, err := router.Router(log.Logger, flags.Prefix, flags.FileStorage, flags.DBAdress)
-	if err != nil {
-		return err
-	}
-
-	log.Info("Server start", zap.String("Running server on:", flags.String()))
-	err = http.ListenAndServe(flags.String(), rtr)
-	log.Error("Error:", zap.Error(err))
+	// Start the server at the address specified in flags.String().
+	appStrct.Log.Info("Server start", zap.String("Running server on:", appStrct.Flags.String()))
+	err = http.ListenAndServe(appStrct.Flags.String(), appStrct.Rtr)
+	appStrct.Log.Error("Error:", zap.Error(err))
 	return err
 }

@@ -1,66 +1,34 @@
+// Package storage defines the StorageMock interface, which outlines the methods for interacting with the data storage.
 package storage
 
 import (
-	"practicumserver/internal/utils"
-	"sync"
+	"context"
+	"practicumserver/internal/models"
 )
 
-type Storage struct {
-	ShortBoolUrls map[string]bool
-	LinkBoolUrls  map[string]bool
-	ShortUrls     map[string]string
-	sm            sync.Mutex
-}
+type StorageMock interface {
+	// SetData accepts an original URL and stores it in the storage.
+	// It returns the shortened URL for the provided original URL and an error if any issue occurs.
+	SetData(ctx context.Context, link string) (string, error)
 
-func NewStorage() *Storage {
-	return &Storage{
-		ShortBoolUrls: map[string]bool{
-			"test": true,
-		},
-		LinkBoolUrls: map[string]bool{
-			"http://test": true,
-		},
-		ShortUrls: map[string]string{
-			"test": "http://test",
-		},
-	}
-}
+	// GetData receives a shortened URL and retrieves the associated original URL from the storage.
+	// It returns the original URL and an error if the shortened URL is found.
+	// If the URL is not found, it returns an empty string.
+	GetData(ctx context.Context, shortLink string) (string, error)
 
-func (s *Storage) СheckShortLink(filename, link string) string {
-	shortLink := utils.LinkShortening()
-	for s.ShortBoolUrls[shortLink] {
-		shortLink = utils.LinkShortening()
-	}
-	NewWrite(filename, link, shortLink)
-	return shortLink
-}
+	// SetListData takes a slice of original URLs and stores each URL in the storage.
+	// It returns a slice of models.ResponseAPIBatch, which contains shortened URLs for the original URLs, and an error.
+	SetListData(ctx context.Context, reqList []models.RequestAPIBatch, prefix string) ([]models.ResponseAPIBatch, error)
 
-func (s *Storage) GetNewShortLink(link, filename string) string {
-	s.sm.Lock()
-	defer s.sm.Unlock()
-	if _, ok := s.LinkBoolUrls[link]; ok {
-		for shortLink, longLink := range s.ShortUrls {
-			if longLink == link {
-				return shortLink
-			}
-		}
-	}
-	return s.СheckShortLink(filename, link)
-}
+	// GetListData retrieves a list of all URLs submitted by the user.
+	// It returns a slice of models.ResponseAPIUserUrls and an error.
+	GetListData(ctx context.Context, prefix string) ([]models.ResponseAPIUserUrls, error)
 
-func (s *Storage) SetData(link, shortLink string) {
-	s.sm.Lock()
-	defer s.sm.Unlock()
-	s.ShortUrls[shortLink] = link
-	s.ShortBoolUrls[shortLink] = true
-	s.LinkBoolUrls[link] = true
-}
+	// CheckUserID checks if a generated UserID is unique within the storage.
+	// It returns true if the UserID is unique, false if it exists, and an error if any issue occurs.
+	CheckUserID(ctx context.Context, userID string) (bool, error)
 
-func (s *Storage) GetData(shortLink string) (string, bool) {
-	s.sm.Lock()
-	defer s.sm.Unlock()
-	if _, ok := s.ShortBoolUrls[shortLink]; ok {
-		return s.ShortUrls[shortLink], false
-	}
-	return "", true
+	// UpdateDeletedFlag modifies the deletion flag of URLs based on the user and shortLink lists.
+	// It does not return any data but may return an error if there's an issue.
+	UpdateDeletedFlag(ctx context.Context, userIDList, shortLinkList []string) error
 }
